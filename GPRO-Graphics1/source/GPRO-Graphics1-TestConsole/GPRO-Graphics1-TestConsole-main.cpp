@@ -23,6 +23,8 @@
 */
 
 
+#include <iostream>
+#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -56,6 +58,39 @@ void testVector()
 int main(int const argc, char const* const argv[])
 {
 	testVector();
+
+	//Image bounds
+	const int image_width = 256;
+	const int image_height = 256;
+
+	//Render
+	std::ofstream fout;
+	fout.open("ppmImage.ppm"); //opens a ppm file 
+
+	//PPM file format
+	fout << "P3\n" << image_width << ' ' << image_height << "\n255\n"; //Important...dont touch!!!
+
+	//pixel rows are written from left to right
+	//pixel cols are written from top to bottom
+	for(int j = image_height - 1; j >= 0; j--)
+	{
+		std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush; //for debuging  
+		for (int i = 0; i < image_width; i++)
+		{
+			//rgb range is 0.0 to 1.0
+			double r = double(i) / (image_width - 1.0); 
+			double g = double(j) / (image_height - 1.0);
+			double b = 0.25;
+
+			int ir = static_cast<int>(255.999 * r);
+			int ig = static_cast<int>(255.999 * g);
+			int ib = static_cast<int>(255.999 * b);
+
+			fout << ir << ' ' << ig << ' ' << ib << '\n';
+		}
+	}
+
+	fout.close();
 
 	printf("\n\n");
 	system("pause");
