@@ -31,6 +31,9 @@
 
 #include "gpro/gpro-math/gproVector.h"
 
+//#include "ray.h" Tried but would say unable to read source file
+//#include "color.h" Tried but would say unable to read source file
+
 
 void testVector()
 {
