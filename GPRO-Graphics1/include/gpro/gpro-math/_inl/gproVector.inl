@@ -18,8 +18,8 @@
 	gproVector.h
 	Interface for vectors. Sets an example for C and C++ compatible headers.
 
-	Modified by: ____________
-	Modified because: ____________
+	Modified by: Jake Seide & Joe Tecce
+	Modified because: Adding Operator Overloads
 */
 
 #ifdef _GPRO_VECTOR_H_
@@ -65,6 +65,21 @@ inline vec3& vec3::operator +=(vec3 const& rh)
 inline vec3 const vec3::operator +(vec3 const& rh) const
 {
 	return vec3((x + rh.x), (y + rh.y), (z + rh.z));
+}
+
+//Overload * to multipling t to each axis of the vec3
+inline vec3 operator *(float t, const vec3& v) {
+	return vec3(t * v.x, t * v.y, t * v.z);
+}
+
+//Overload / to divide a vec3 by a double
+inline vec3 operator/(const vec3& v, float t) {
+	return (1 / t) * v;
+}
+
+//Function to get unit length
+inline vec3 unit_vector(vec3 v) {
+	return v / v.length();
 }
 
 #endif	// __cplusplus
