@@ -18,13 +18,14 @@
 	gproVector.h
 	Interface for vectors. Sets an example for C and C++ compatible headers.
 
-	Modified by: ____________
-	Modified because: ____________
+	Modified by: Jake Seide & Joe Tecce
+	Modified because: Adding Length Functions
 */
 
 #ifndef _GPRO_VECTOR_H_
 #define _GPRO_VECTOR_H_
 
+#include <cmath>
 
 #ifdef __cplusplus
 // DB: link C++ symbols as if they are C where possible
@@ -76,6 +77,16 @@ union vec3
 
 	vec3 const operator +(vec3 const& rh) const;	// addition operator (get sum of this and another)
 
+	//Getting the length of a Vector3
+	float length() const {
+		return sqrt(length_squared());
+	}
+
+	//Squaring the length of the Vector3
+	float length_squared() const {
+		return x * x + y * y + z * z;
+	}
+
 #endif	// __cplusplus
 };
 
@@ -103,3 +114,9 @@ floatv vec3sum(float3 v_sum, float3 const v_lh, float3 const v_rh);	// get sum o
 
 
 #endif	// !_GPRO_VECTOR_H_
+
+/*
+inline vec3 operator *(double t, const vec3& v) {
+	return vec3(t * v.x, t * v.y, t * v.z);
+}
+*/

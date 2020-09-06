@@ -28,11 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include "gpro/gpro-math/gproVector.h"
-
-//#include "ray.h" Tried but would say unable to read source file
-//#include "color.h" Tried but would say unable to read source file
+#include "ray.h" 
+#include "color.h"
 
 
 void testVector()
@@ -57,6 +55,12 @@ void testVector()
 #endif	// __cplusplus
 }
 
+//Creates a ray of blue to white gradient for the background
+vec3 ray_color(const ray& r) {
+	vec3 unit_direction = unit_vector(r.direction());
+	float t = 0.5 * (unit_direction.y + 1.0);
+	return (1.0 - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
+}
 
 int main(int const argc, char const* const argv[])
 {
@@ -80,16 +84,8 @@ int main(int const argc, char const* const argv[])
 		std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush; //for debuging  
 		for (int i = 0; i < image_width; i++)
 		{
-			//rgb range is 0.0 to 1.0
-			double r = double(i) / (image_width - 1.0); 
-			double g = double(j) / (image_height - 1.0);
-			double b = 0.25;
-
-			int ir = static_cast<int>(255.999 * r);
-			int ig = static_cast<int>(255.999 * g);
-			int ib = static_cast<int>(255.999 * b);
-
-			fout << ir << ' ' << ig << ' ' << ib << '\n';
+			vec3 pixel_color(float(i) / (image_width - 1), float(j) / (image_height - 1), 0.25); //Color pixels for the screen
+			write_color(fout, pixel_color); //Puts colored pixels in ppm file
 		}
 	}
 
