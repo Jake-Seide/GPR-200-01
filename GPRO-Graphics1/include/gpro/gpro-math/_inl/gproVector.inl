@@ -67,14 +67,24 @@ inline vec3 const vec3::operator +(vec3 const& rh) const
 	return vec3((x + rh.x), (y + rh.y), (z + rh.z));
 }
 
-//Overload * to multipling t to each axis of the vec3
+//Overloads(*) : multiples a double and a vector
 inline vec3 operator *(float t, const vec3& v) {
 	return vec3(t * v.x, t * v.y, t * v.z);
 }
 
-//Overload / to divide a vec3 by a double
+//Overloads(/) : divides a vec3 by a double
 inline vec3 operator/(const vec3& v, float t) {
 	return (1 / t) * v;
+}
+
+//Overloads(-) : subtracts two vectors
+inline vec3 operator-(const vec3& u, const vec3& v) {
+	return vec3(u.x - v.x, u.y - v.y,u.z - v.z);
+}
+
+//Function to get Dot product of two vectors
+inline float dot(const vec3& u, const vec3& v) {
+	return (u.x * v.x) + (u.y * v.y) + (u.z * v.z);
 }
 
 //Function to get unit length
