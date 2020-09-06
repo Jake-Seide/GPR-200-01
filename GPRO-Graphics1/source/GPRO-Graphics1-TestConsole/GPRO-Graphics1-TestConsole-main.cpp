@@ -55,11 +55,27 @@ void testVector()
 #endif	// __cplusplus
 }
 
-//Creates a ray of blue to white gradient for the background
+
+//check if ray is within the sphere
+bool hit_sphere(const vec3& center, float radius, const ray& r)
+{
+	//ask Dan the Man about how this math works cuz yo soy confusión
+	vec3 originCenter = r.origin() - center;
+	float a = dot(r.direction(), r.direction());
+	float b = 2.0f * dot(originCenter, r.direction());
+	float c = dot(originCenter, originCenter) - radius * radius;
+	float discriminant = b * b - 4 * a * c;
+	return (discriminant > 0);
+}
+
+//Creates a linear blend(lerp) of blue to white for the background
 vec3 ray_color(const ray& r) {
+	if (hit_sphere(vec3(0, 0, -1), 0.5f, r)) //if ray hits sphere(see above)
+		return vec3(1, 0, 0); //return red
+	
 	vec3 unit_direction = unit_vector(r.direction());
-	float t = 0.5 * (unit_direction.y + 1.0);
-	return (1.0 - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
+	float t = 0.5f * (unit_direction.y + 1.0f);
+	return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
 }
 
 int main(int const argc, char const* const argv[])
@@ -67,8 +83,20 @@ int main(int const argc, char const* const argv[])
 	testVector();
 
 	//Image bounds
-	const int image_width = 256;
-	const int image_height = 256;
+	const float aspect_ratio = 16.0f / 9.0f;
+	const int image_width = 400;
+	const int image_height = static_cast<int>(image_width / aspect_ratio);
+
+	//Camera
+	float viewport_height = 2.0f;
+	float viewport_width = aspect_ratio * viewport_height;
+	float focal_length = 1.0f;
+
+	vec3 origin = vec3(0, 0, 0); //camera origin position
+	vec3 horizontal = vec3(viewport_width, 0, 0); //screen width
+	vec3 vertical = vec3(0, viewport_height, 0); //screen height
+	vec3 lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focal_length); //gets lower left corner of screen
+
 
 	//Render
 	std::ofstream fout;
@@ -81,14 +109,20 @@ int main(int const argc, char const* const argv[])
 	//pixel cols are written from top to bottom
 	for(int j = image_height - 1; j >= 0; j--)
 	{
-		std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush; //for debuging  
+		std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush; //to check for looping correctly  
 		for (int i = 0; i < image_width; i++)
 		{
-			vec3 pixel_color(float(i) / (image_width - 1), float(j) / (image_height - 1), 0.25); //Color pixels for the screen
+			//create gradient effect
+			float u = float(i) / (image_width - 1);
+			float v = float(j) / (image_height - 1);
+			
+			ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin); //creates ray
+			vec3 pixel_color = ray_color(r); //adds color to ray
 			write_color(fout, pixel_color); //Puts colored pixels in ppm file
 		}
 	}
 
+	std::cerr << "\nDone. \n ";
 	fout.close();
 
 	printf("\n\n");
