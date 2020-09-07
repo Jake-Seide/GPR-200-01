@@ -28,10 +28,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "gpro/gpro-math/gproVector.h"
-#include "ray.h" 
-#include "color.h"
+#include "rtweekend.h"
 
+#include "color.h"
+#include "hittable_list.h"
+#include "sphere.h"
+
+/*
+#include "rtweekend.h"
+#include "hittable_list.h"
+#include "sphere.h"
+//#include "gpro/gpro-math/gproVector.h"
+//#include "ray.h" 
+#include "color.h"
+*/
 
 void testVector()
 {
@@ -55,22 +65,25 @@ void testVector()
 #endif	// __cplusplus
 }
 
-
-
-
 //Creates a linear blend(lerp) of blue to white for the background
-vec3 ray_color(const ray& r) {
-	float t = hit_sphere(vec3(0, 0, -1), 0.5f, r); //This is the return product of hit_sphere
+vec3 ray_color(const ray& r, const hittable& world) {
+	hit_record rec;
+	if (world.hit(r, 0, infinity, rec)) {
+		return 0.5f * (rec.normal + vec3(1, 1, 1));
+	}
+	//float t = hit_sphere(vec3(0, 0, -1), 0.5f, r); //This is the return product of hit_sphere
 
+	/*
 	//If t is inside the sphere it will add the color corisponding with there x/y/z to r/g/b
 	if (t > 0.0f) {
 		vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
 		return 0.5f * vec3(N.x + 1, N.y + 1, N.z + 1); //+1 is to make positive for colors
 	}
+	*/
 
 	//If not in sphere will create the Blue to White Gradiant
 	vec3 unit_direction = unit_vector(r.direction());
-	t = 0.5f * (unit_direction.y + 1.0f);
+	float t = 0.5f * (unit_direction.y + 1.0f);
 	return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
 }
 
@@ -82,6 +95,11 @@ int main(int const argc, char const* const argv[])
 	const float aspect_ratio = 16.0f / 9.0f;
 	const int image_width = 400;
 	const int image_height = static_cast<int>(image_width / aspect_ratio);
+
+	//World
+	hittable_list world;
+	world.add(make_shared<sphere>(vec3(0, 0, -1), 0.5f));
+	world.add(make_shared<sphere>(vec3(0, -100.5, -1), 100));
 
 	//Camera
 	float viewport_height = 2.0f;
@@ -113,7 +131,7 @@ int main(int const argc, char const* const argv[])
 			float v = float(j) / (image_height - 1);
 			
 			ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin); //creates ray
-			vec3 pixel_color = ray_color(r); //adds color to ray
+			vec3 pixel_color = ray_color(r, world); //adds color to ray
 			write_color(fout, pixel_color); //Puts colored pixels in ppm file
 		}
 	}

@@ -10,7 +10,7 @@ public:
 	float radius;
 
 public:
-	sphere() {}
+	//sphere() {}
 	sphere(vec3 cen, float r) : center(cen), radius(r) {};
 
 	virtual bool hit(
@@ -28,15 +28,15 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const 
 	float discriminant = half_b * half_b - a * c;
 
 	//this section is the logic to determine whether the point/ray is within the sphere
-	if (discriminant < 0) {
+	if (discriminant > 0) {
 		float root = sqrt(discriminant);
-
 		float temp = (-half_b - root) / a;
+
 		if (temp < t_max && temp > t_min) {
 			rec.t = temp;
 			rec.p = r.at(rec.t);
 			vec3 outward_normal = (rec.p - center) / radius; //storing outward normal
-			rec.set_face_normal(radius, outward_normal); //storing outward normal
+			rec.set_face_normal(r, outward_normal); //storing outward normal
 			return true;
 		}
 
@@ -45,8 +45,9 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const 
 			rec.t = temp;
 			rec.p = r.at(rec.t);
 			vec3 outward_normal = (rec.p - center) / radius; //storing outward normal
-			rec.set_face_normal(radius, outward_normal); //storing outward normal
-			return true
+			rec.set_face_normal(r, outward_normal); //storing outward normal
+			return true;
+		}
 	}
 	return false;
 }

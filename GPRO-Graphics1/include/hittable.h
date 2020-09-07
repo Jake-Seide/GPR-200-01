@@ -12,7 +12,7 @@ struct hit_record
 
 	inline void set_face_normal(const ray& r, const vec3& outward_normal) {
 		front_face = dot(r.direction(), outward_normal) < 0; //compares the dot product of the vectors on the insde and outside of the object
-		normal = front_face ? outward_normal :  -outward_normal; //positive dot product means the normal is front facing
+		normal = front_face ? outward_normal : -outward_normal; //positive dot product means the normal is front facing
 	}
 };
 
