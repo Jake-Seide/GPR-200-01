@@ -77,6 +77,8 @@ union vec3
 
 	vec3 const operator +(vec3 const& rh) const;	// addition operator (get sum of this and another)
 
+	vec3 operator-() const { return vec3(-x, -y, -z); }	//makes a vector negative
+
 	//Getting the length of a Vector3
 	float length() const {
 		return sqrt(length_squared());

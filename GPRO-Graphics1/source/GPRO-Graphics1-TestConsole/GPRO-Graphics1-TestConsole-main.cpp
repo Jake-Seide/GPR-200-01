@@ -56,22 +56,7 @@ void testVector()
 }
 
 
-//check if ray is within the sphere
-float hit_sphere(const vec3& center, float radius, const ray& r)
-{
-	//ask Dan the Man about how this math works cuz yo soy confusión
-	vec3 originCenter = r.origin() - center;
-	float a = r.direction().length_squared(); //Same as Vector Dotted the same Vector "dot(r.direction(), r.direction());"
-	float half_b = dot(originCenter, r.direction()); //Would be Muilitplied by 2 follow commented method;
-	float c = originCenter.length_squared() - radius * radius; //dot(originCenter, originCenter) - radius * radius;
-	float discriminant = half_b * half_b - a * c;
-	if (discriminant < 0) {
-		return -1.0f;
-	}
-	else {
-		return (-half_b - sqrt(discriminant)) / a; //Simplified Quadratic Equation
-	}
-}
+
 
 //Creates a linear blend(lerp) of blue to white for the background
 vec3 ray_color(const ray& r) {
