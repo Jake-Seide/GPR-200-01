@@ -6,6 +6,8 @@
 #include <limits>
 #include <memory>
 
+#include "ray.h"
+#include "gpro/gpro-math/gproVector.h"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -19,9 +21,6 @@ const float pi = 3.1415926535897932385f;
 inline float degrees_to_radians(float degrees) {
 	return degrees * pi / 180.0f;
 }
-
-#include "ray.h"
-#include "gpro/gpro-math/gproVector.h"
 
 #endif
 
