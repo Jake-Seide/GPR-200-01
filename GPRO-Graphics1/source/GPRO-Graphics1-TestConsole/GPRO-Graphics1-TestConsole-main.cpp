@@ -57,24 +57,35 @@ void testVector()
 
 
 //check if ray is within the sphere
-bool hit_sphere(const vec3& center, float radius, const ray& r)
+float hit_sphere(const vec3& center, float radius, const ray& r)
 {
 	//ask Dan the Man about how this math works cuz yo soy confusión
 	vec3 originCenter = r.origin() - center;
-	float a = dot(r.direction(), r.direction());
-	float b = 2.0f * dot(originCenter, r.direction());
-	float c = dot(originCenter, originCenter) - radius * radius;
-	float discriminant = b * b - 4 * a * c;
-	return (discriminant > 0);
+	float a = r.direction().length_squared(); //Same as Vector Dotted the same Vector "dot(r.direction(), r.direction());"
+	float half_b = dot(originCenter, r.direction()); //Would be Muilitplied by 2 follow commented method;
+	float c = originCenter.length_squared() - radius * radius; //dot(originCenter, originCenter) - radius * radius;
+	float discriminant = half_b * half_b - a * c;
+	if (discriminant < 0) {
+		return -1.0f;
+	}
+	else {
+		return (-half_b - sqrt(discriminant)) / a; //Simplified Quadratic Equation
+	}
 }
 
 //Creates a linear blend(lerp) of blue to white for the background
 vec3 ray_color(const ray& r) {
-	if (hit_sphere(vec3(0, 0, -1), 0.5f, r)) //if ray hits sphere(see above)
-		return vec3(1, 0, 0); //return red
-	
+	float t = hit_sphere(vec3(0, 0, -1), 0.5f, r); //This is the return product of hit_sphere
+
+	//If t is inside the sphere it will add the color corisponding with there x/y/z to r/g/b
+	if (t > 0.0f) {
+		vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
+		return 0.5f * vec3(N.x + 1, N.y + 1, N.z + 1); //+1 is to make positive for colors
+	}
+
+	//If not in sphere will create the Blue to White Gradiant
 	vec3 unit_direction = unit_vector(r.direction());
-	float t = 0.5f * (unit_direction.y + 1.0f);
+	t = 0.5f * (unit_direction.y + 1.0f);
 	return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
 }
 
