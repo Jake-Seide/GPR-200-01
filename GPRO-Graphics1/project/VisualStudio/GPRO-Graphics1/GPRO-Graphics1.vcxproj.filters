@@ -38,6 +38,9 @@
     <ClInclude Include="..\..\..\include\color.h">
       <Filter>Header Files\gpro</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\hittable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\include\gpro\gpro-math\_inl\gproVector.inl">
