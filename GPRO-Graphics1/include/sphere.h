@@ -7,15 +7,16 @@
 class sphere : public hittable {
 public:
 	vec3 center;
-	float radius;
+	float radius{};
 
 public:
-	//sphere() {}
+	sphere() {};
 	sphere(vec3 cen, float r) : center(cen), radius(r) {};
 
 	virtual bool hit(
 		const ray& r, float tmin, float tmax, hit_record& rec) const override;
 };
+
 
 bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
 	
@@ -53,4 +54,3 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const 
 }
 
 #endif 
-

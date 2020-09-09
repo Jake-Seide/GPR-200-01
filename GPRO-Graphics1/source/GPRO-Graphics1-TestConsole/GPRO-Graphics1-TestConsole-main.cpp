@@ -99,7 +99,7 @@ int main(int const argc, char const* const argv[])
 	//World
 	hittable_list world;
 	world.add(make_shared<sphere>(vec3(0, 0, -1), 0.5f));
-	world.add(make_shared<sphere>(vec3(0, -100.5, -1), 100));
+	world.add(make_shared<sphere>(vec3(0, -100.5, -1), 100.0f));
 
 	//Camera
 	float viewport_height = 2.0f;
