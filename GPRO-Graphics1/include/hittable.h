@@ -7,8 +7,8 @@ struct hit_record
 {
 	vec3 p; //this stands for "point" or "ray"
 	vec3 normal; //normal map?
-	float t; //ray parameters
-	bool front_face;
+	float t{}; //ray parameters
+	bool front_face = false;
 
 	inline void set_face_normal(const ray& r, const vec3& outward_normal) {
 		front_face = dot(r.direction(), outward_normal) < 0; //compares the dot product of the vectors on the insde and outside of the object
