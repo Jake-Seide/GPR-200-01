@@ -18,10 +18,9 @@
 	GPRO-Graphics1-TestConsole-main.c/.cpp
 	Main entry point source file for a Windows console application.
 
-	Modified by: ____________
-	Modified because: ____________
+	Modified by: Jake Seide & Joe Tecce
+	Modified because: Implementing "Ray Tracing In One Weekend" Ch 1 - 6
 */
-
 
 #include <iostream>
 #include <fstream>
@@ -33,15 +32,6 @@
 #include "color.h"
 #include "hittable_list.h"
 #include "sphere.h"
-
-/*
-#include "rtweekend.h"
-#include "hittable_list.h"
-#include "sphere.h"
-//#include "gpro/gpro-math/gproVector.h"
-//#include "ray.h" 
-#include "color.h"
-*/
 
 void testVector()
 {
@@ -71,15 +61,6 @@ vec3 ray_color(const ray& r, const hittable& world) {
 	if (world.hit(r, 0, infinity, rec)) {
 		return 0.5f * (rec.normal + vec3(1, 1, 1));
 	}
-	//float t = hit_sphere(vec3(0, 0, -1), 0.5f, r); //This is the return product of hit_sphere
-
-	/*
-	//If t is inside the sphere it will add the color corisponding with there x/y/z to r/g/b
-	if (t > 0.0f) {
-		vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
-		return 0.5f * vec3(N.x + 1, N.y + 1, N.z + 1); //+1 is to make positive for colors
-	}
-	*/
 
 	//If not in sphere will create the Blue to White Gradiant
 	vec3 unit_direction = unit_vector(r.direction());
