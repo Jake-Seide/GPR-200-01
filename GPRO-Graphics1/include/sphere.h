@@ -36,9 +36,8 @@ public:
 
 bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
 	
-	//ask Dan the Man about how this math works cuz yo soy confusión
 	//this block creates the the hittable sphere
-	vec3 originCenter = r.origin() - center;
+	vec3 originCenter = r.origin() - center;	//origin->ray; center->sphere 
 	float a = r.direction().length_squared(); //Same as Vector Dotted the same Vector "dot(r.direction(), r.direction());"
 	float half_b = dot(originCenter, r.direction()); //Would be Muilitplied by 2 follow commented method;
 	float c = originCenter.length_squared() - radius * radius; //dot(originCenter, originCenter) - radius * radius;
