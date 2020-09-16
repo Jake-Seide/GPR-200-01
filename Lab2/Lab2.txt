@@ -1,0 +1,84 @@
+// using color = vec3; (see below)
+#define colorRGB vec3
+#define colorRGBA vec4
+
+vec4 myEffect0(in vec2 fragCoord, in vec2 resolution) //do not use global->(i)variables in non-main function
+{       
+    //Final: red-green gradient
+    vec2 uv = fragCoord / resolution; //normilize pixel coordinates (from 0 to 1)
+    
+    vec3 color = colorRGB(uv, 0.25); //Gradient
+    float alpha = 1.0;				 //Alpha
+    return colorRGBA(color, alpha);  //Return pixel color
+  
+}
+
+vec4 myEffect1(in vec2 fragCoord, in vec2 resolution)
+{
+    //Normilize pixel coordinates (from 0 to 1)
+ 	vec2 uv = fragCoord / resolution; 
+    
+    //Creates white and black color 
+    vec4 colorW = colorRGBA(1.0, 1.0, 1.0, 1.0);
+    vec4 colorB = colorRGBA(0.0, 0.0, 0.0, 1.0);
+    
+    //set height and width of checkers
+    float size = 50.0;
+    
+    //I really need help with this part, im so lost with the math
+    vec2 pos = mod(floor(fragCoord / size), 2.0);  //I think this creates the tiles
+    if(mod(pos.x + pos.y, 2.0) != 0.0) //Determines the tile color
+        return colorW;
+    else if(pos.x + pos.y == 0.0) //Determines the tile color
+        return colorB;
+}
+
+vec4 myEffect2(in vec2 fragCoord, in vec2 resolution)
+{
+	//Normilize pixel coordinates (from 0 to 1)
+ 	vec2 uv = fragCoord / resolution; 
+	float radius = 0.9*abs(sin(iTime)) +.2; //Change radius over time
+
+    vec2 dist = uv-vec2(0.5); //set origin to the middle of the screen
+    float circle = smoothstep(radius-(radius * 0.01), radius+(radius * 0.01), dot(dist, dist) * 5.0); //Inisde or not
+    
+    vec3 color = vec3(circle); //sets everthing above/below the float->circle to a color
+    return vec4(color, 1.0); //creates the color for the curent pixel
+}
+
+vec4 myEffect3(in vec2 fragCoord, in vec2 resolution, in vec2 mouse)
+{
+    //created from playing around with Effect2 
+    //Mouse input inspired by https://www.shadertoy.com/view/4l2yz1
+    
+ 	//Normilize pixel coordinates (from 0 to 1)
+ 	vec2 uv = fragCoord / resolution; 
+	float radius = 4.0*abs(cos(iTime * uv.y));
+   	
+    //Mouse Cordinates
+    vec2 mouseUV = mouse.xy/resolution.xy; 
+    mouseUV.y *= resolution.y / resolution.x;
+    
+    vec2 dist = uv - mouseUV; //set origin to mouse loc(MUST CLICK)
+    float circle = smoothstep(radius-(radius * 0.01), radius+(radius * 0.01), dot(dist, dist) * 5.0);
+    
+    vec3 colorGrad = vec3(uv, 0.6); //Gradient color
+    vec3 color = vec3(circle + colorGrad); //changes circle to a gradient
+ 
+    return vec4(color, 1.0); //creates the color for the curent pixel
+
+}
+
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    //R, G, B, A = [0, 1]
+    //fragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    
+    //Uncomment one of the function calls to test the various effects
+    //fragColor = myEffect0(fragCoord, iResolution.xy);				//Passes in the fragCoord from the myEffect0 function 
+    //fragColor = myEffect1(fragCoord, iResolution.xy);				//Passes in the fragCoord from the myEffect1 function
+    //fragColor = myEffect2(fragCoord, iResolution.xy);				//Passes in the fragCoord from the myEffect2 function
+    //fragColor = myEffect3(fragCoord, iResolution.xy, iMouse.xy);	//Passes in the fragCoord from the myEffect3 function
+    
+}
