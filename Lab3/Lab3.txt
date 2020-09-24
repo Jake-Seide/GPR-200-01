@@ -67,7 +67,7 @@ vec4 unit_vector(in vec4 v)
 //    rayOrigin:    input ray origin
 bool hit_sphere(in vec4 center, in float radius, in vec4 rayDirection, in vec4 rayOrigin) 
 {   
- 	//sphere logic
+    //sphere logic
     vec4 oc = rayOrigin - center;
     float a = dot(rayDirection, rayDirection);
     float b = 2.0 * dot(oc, rayDirection);
