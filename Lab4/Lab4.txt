@@ -1,4 +1,5 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+// Collaborated with Ian Urban
 
 // asPoint: promote a 3D vector into a 4D vector representing a point (w=1)
 //    point: input 3D vector
@@ -81,8 +82,49 @@ float lengthSq(vec2 x)
 {
 	return dot(x, x);   
 }
-/*************************/
+
+float calcDiffIntesity(in float diffCoefficient, in float attenuatedIntensity) 
+{
+    float diffIntensity;
+    float diffCoefficient;
+    float attenuatedIntensity;
     
+    diffIntensity = diffCoefficient * attenuatedIntensity;
+    
+    return diffIntensity;
+}
+
+float calcDiffCoefficient(in vec4 rayDirection)
+{
+    //Lambert's Cosine Law
+   	vec4 lightRay; 			//vector that bounces off of surface -> set this 			
+    vec4 rSurface; 			//Surface point? -> set this		
+    vec4 surfaceNorm; 		//Surface normal vector -> set this
+    
+    vec4 lightRay = normalize(lightRay - rSurface);
+    
+    //float diffCoefficient = cos(uniSurfaceNorm * lightPos);
+    float diffCoefficient = max(0.0, dot(surfaceNorm * lightRay)); //this might be wrong
+    
+    return diffCoefficient;
+}
+
+float calcAttenuation()
+{
+    
+}
+/*************************/
+
+//This function might be wrong
+void initPointLight(out sPointLight pointLight, 
+                   in vec4 center, in vec4 color, in float intensity)
+{
+	pointLight.center = asPoint(center);
+    pointLight.color = asPoint(color);
+    pointLight.intensity = asPoint(intensity);
+    
+    return sPointLight;
+}
     
 bool initSphere(out sSphere sphere,
                 in vec3 center, in float radius)
@@ -97,7 +139,7 @@ bool initSphere(out sSphere sphere,
     return false;
 }
     
-vec4 createSphere(in sSphere sphere, in vec4 dp, in float lSq, in float rSq)
+vec4 createSphereNormal(in sSphere sphere, in vec4 dp, in float lSq, in float rSq)
 {
 	//return vec4(0.0, 1.0, 1.0, 1.0);   
 	//dx, dy, r
@@ -113,20 +155,17 @@ vec4 createSphere(in sSphere sphere, in vec4 dp, in float lSq, in float rSq)
 }
 
 
-
 // calcColor: calculate the color of a pixel given a ray
 //    rayDirection: input ray direction
 //    rayOrigin:    input ray origin
 vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
 {
-    // DUMMY RESULT: OUTPUT RAY DIRECTION AS-IS
-    //  -> what does the ray look like as color?
-    //return rayDirection;
-    
-    
     //Scene
     sSphere sphere;
     initSphere(sphere, vec3(0.0, 0.0, -4.0), 0.5);
+    sPointLight pointLight;
+    initPointlight(pointLight, vec4(0.0, 0.0, -4.0), 
+                   vec4(1.0, 0.0, 0.0, 0.0), 1.0);
     
     
     //Testing procedural sphere (might need to be in its own function)
@@ -136,8 +175,8 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     dp.xy = rayDirection.xy - sphere.center.xy;
     if (lengthSq(dp.xy) <= rSq)
     {
-        //Creating procedural sphere
-		return createSphere(sphere, dp, lSq, rSq); 
+        //Creating procedural sphere color
+		return createSphereNormal(sphere, dp, lSq, rSq); 
     }
       
     
@@ -170,3 +209,4 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     calcRay(rayDirection, rayOrigin, vec3(0.0), viewport);
     
     fragColor += calcColor(rayDirection, rayOrigin);
+}
