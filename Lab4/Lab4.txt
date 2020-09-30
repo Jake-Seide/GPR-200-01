@@ -104,34 +104,37 @@ float calcDiffCoefficient(in sPointLight pointLight, in sSurface surface)
     return diffCoefficient;
 }
 
-/*float calcAttenuation(in sPointLight pointLight)
+float calcAttenuation(in sPointLight pointLight, in sSurface surface)
 {
     float attenuatedIntensity;	//return val
     float lightRayDist;			//Set Ray distance
 	float intensity = pointLight.intensity;
+   
+    vec3 pointCenter = pointLight.center.xyz;
+    vec3 surfacePoint = surface.surfacePoint.xyz;
+    
+    //pow operations
+    float temp1x = pointCenter.x - surfacePoint.x;
+    float sqTemp1x = temp1x * temp1x;
+    float temp2y = pointCenter.y - surfacePoint.y;
+    float sqTemp2y = temp2y * temp2y;
+    float temp3z = pointCenter.x - surfacePoint.x;
+    float sqTemp3z = temp3z * temp3z;
+    
+    lightRayDist = sqrt(sqTemp1x + sqTemp2y + sqTemp3z);
     
     //operations
-    float divLightItensity = lightRayDist/intensity;
+    float divLightIntensity = lightRayDist/intensity;
     float sqLightDist = lightRayDist * lightRayDist;
     float sqIntensity = intensity * intensity;
     
     
-    attenuatedItensity = 1/(1+ divLightIntensiy) 
-                            + (sqLightDist/sqIntensity));
+    attenuatedIntensity = 1.0/(1.0 + divLightIntensity) 
+                            + (sqLightDist/sqIntensity);
     
     return attenuatedIntensity;
-}*/
+}
 
-/*float calcDiffIntesity(in float diffCoefficient, in float attenuatedIntensity) 
-{
-    float diffIntensity;
-    float diffCoefficient;
-    float attenuatedIntensity;
-    
-    diffIntensity = diffCoefficient * attenuatedIntensity;
-    
-    return diffIntensity;
-}*/
 /***************************************/
 bool initPointLight(out sPointLight pointLight,
                    in vec3 center, in vec4 color, in float intensity)
@@ -178,8 +181,16 @@ vec4 createSphereNormal(out sSurface surface, in sSphere sphere, in sPointLight 
     surface.surfaceNormal = normal;
     
     //Testing Lambert Shading
-    float temp = calcDiffCoefficient(pointLight, surface);
-    return vec4(temp, temp, temp, 1.0);
+    float temp1 = calcDiffCoefficient(pointLight, surface);
+    float temp2 = calcAttenuation(pointLight, surface);
+    float diffIntensity = temp1 * temp2;	//diff intensity
+    
+    vec4 normalCol = vec4(normal * 0.5 + 0.5, 1.0);
+    vec4 lightCol = pointLight.color;
+    vec4 test = normalCol * lightCol;
+   	vec4 diffIntesityVec4 = vec4(vec3(diffIntensity), 1.0);
+    vec4 lambertianColor = diffIntesityVec4 * test;
+    return lambertianColor;
 }
 
 
@@ -193,7 +204,7 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     initSphere(sphere, vec3(0.0, 0.0, -4.0), 0.5);
     sPointLight pointLight;
     initPointLight(pointLight, vec3(1.0, 1.0, 2.0), 
-                   vec4(1.0, 0.0, 0.0, 1.0), 100.0);
+                   vec4(1.0, 0.0, 0.0, 1.0), 1000.0);
     sSurface surface;
     
     
@@ -211,8 +222,8 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     
 	// BACKGROUND
 	const vec3 warm = vec3(0.8, 0.4, 0.2), cool = vec3(0.2, 0.4, 0.8);
-	//return vec4(mix(warm, cool, rayDirection.y), 1.0);
-    return vec4(0.5);
+	return vec4(mix(warm, cool, rayDirection.y), 1.0);
+    //turn vec4(0.5);
 }
 
 // mainImage: process the current pixel (exactly one call per pixel)
