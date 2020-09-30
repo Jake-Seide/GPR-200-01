@@ -135,6 +135,36 @@ float calcAttenuation(in sPointLight pointLight, in sSurface surface)
     return attenuatedIntensity;
 }
 
+float calcSpecularCoefficient(in sPointLight pointLight, in sSurface surface, 
+                              vec4 rayOrigin)
+{
+    float specularCoefficient;
+    vec3 rSurface = surface.surfacePoint;
+    
+    //calc view vector
+    vec4 viewVec = vec4(normalize(rayOrigin.xyz - 
+                                  surface.surfacePoint.xyz), 1.0); 
+    //calc lightRay
+    vec4 lightRay = vec4(normalize(pointLight.center.xyz - rSurface.xyz), 1.0);
+    
+    
+    //L = LightRay, N = surfaceNormal
+    vec4 refLightVec = vec4(reflect(-lightRay.xyz, surface.surfaceNormal.xyz), 1.0); 
+    
+    specularCoefficient = max(0.0, dot(viewVec, refLightVec));
+    return specularCoefficient;
+}
+
+/*float calcHighlightExpo()
+{
+    
+}
+
+float calcSpecularIntensity(in float specularCoefficient, in float highlightExpo)
+{   
+    return float specularIntensity = pow(specularCoefficient, highlightExpo);
+}*/
+
 /***************************************/
 bool initPointLight(out sPointLight pointLight,
                    in vec3 center, in vec4 color, in float intensity)
@@ -165,7 +195,7 @@ bool initSphere(out sSphere sphere,
 }
     
 vec4 createSphereNormal(out sSurface surface, in sSphere sphere, in sPointLight pointLight, 
-                        in vec4 dp, in float lSq, in float rSq)
+                        in vec4 dp, in float lSq, in float rSq, in vec4 rayOrigin)
 {
     dp.z = rSq - lSq; //same as above(optimized)
     
@@ -181,16 +211,18 @@ vec4 createSphereNormal(out sSurface surface, in sSphere sphere, in sPointLight 
     surface.surfaceNormal = normal;
     
     //Testing Lambert Shading
-    float temp1 = calcDiffCoefficient(pointLight, surface);
+    /*float temp1 = calcDiffCoefficient(pointLight, surface);
     float temp2 = calcAttenuation(pointLight, surface);
     float diffIntensity = temp1 * temp2;	//diff intensity
     
     vec4 normalCol = vec4(normal * 0.5 + 0.5, 1.0);
-    vec4 lightCol = pointLight.color;
-    vec4 test = normalCol * lightCol;
    	vec4 diffIntesityVec4 = vec4(vec3(diffIntensity), 1.0);
-    vec4 lambertianColor = diffIntesityVec4 * test;
-    return lambertianColor;
+    vec4 lambertianColor = diffIntesityVec4 * normalCol;
+    return lambertianColor;*/
+    
+    float testPhong = calcSpecularCoefficient(pointLight, surface, rayOrigin);
+    
+    return vec4(testPhong, testPhong, testPhong, 1.0);
 }
 
 
@@ -216,7 +248,8 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     if (lengthSq(dp.xy) <= rSq)
     {
         //Creating procedural sphere color
-		return createSphereNormal(surface, sphere, pointLight, dp, lSq, rSq); 
+		return createSphereNormal(surface, sphere, pointLight, dp, lSq,
+                                  rSq, rayOrigin); 
     }
       
     
