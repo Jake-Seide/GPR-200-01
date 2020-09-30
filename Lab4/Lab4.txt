@@ -75,9 +75,15 @@ struct sPointLight
     vec4 color;		//RGBA
     float intesity; //scalar for the lights
 };
+    
+struct sSurface
+{
+    vec4 surfacePoint;
+    vec3 surfaceNormal;
+}
 /***************************************/
 
-/********Math Calcs*******/
+/********Math Calcs*********************/
 float lengthSq(vec2 x)
 {
 	return dot(x, x);   
@@ -94,36 +100,49 @@ float calcDiffIntesity(in float diffCoefficient, in float attenuatedIntensity)
     return diffIntensity;
 }
 
-float calcDiffCoefficient(in vec4 rayDirection)
+//Assign to all the color chanels given a light pos just above and to the right of the viewer
+float calcDiffCoefficient(in sPointLight pointLight, in sSurface surface)
 {
     //Lambert's Cosine Law
    	vec4 lightRay; 			//vector that bounces off of surface -> set this 			
-    vec4 rSurface; 			//Surface point? -> set this		
-    vec4 surfaceNorm; 		//Surface normal vector -> set this
+    vec4 rSurface = surface.surfacePoint;			
+    vec4 surfaceNorm = surface.surfaceNormal;
     
-    vec4 lightRay = normalize(lightRay - rSurface);
-    
+    vec4 lightRay = normalize(pointLight.center - rSurface); //optimize
+   
     //float diffCoefficient = cos(uniSurfaceNorm * lightPos);
     float diffCoefficient = max(0.0, dot(surfaceNorm * lightRay)); //this might be wrong
     
     return diffCoefficient;
 }
 
-float calcAttenuation()
+/*float calcAttenuation(in sPointLight pointLight)
 {
+    float attenuatedIntensity;	//return val
+    float lightRayDist;			//Set Ray distance
+	float intensity = pointLight.intensity;
     
-}
-/*************************/
+    //operations
+    float divLightItensity = lightRayDist/intensity;
+    float sqLightDist = lightRayDist * lightRayDist;
+    float sqIntensity = intensity * intensity;
+    
+    
+    attenuatedItensity = 1/(1+ divLightIntensiy) 
+                            + (sqLightDist/sqIntensity));
+    
+    return attenuatedIntensity;
+}*/
+/***************************************/
 
 //This function might be wrong
 void initPointLight(out sPointLight pointLight, 
-                   in vec4 center, in vec4 color, in float intensity)
+                   in vec3 center, in vec4 color, in float intensity)
 {
 	pointLight.center = asPoint(center);
-    pointLight.color = asPoint(color);
-    pointLight.intensity = asPoint(intensity);
+    pointLight.color = color;
+    pointLight.intensity = intensity;
     
-    return sPointLight;
 }
     
 bool initSphere(out sSphere sphere,
@@ -139,19 +158,26 @@ bool initSphere(out sSphere sphere,
     return false;
 }
     
-vec4 createSphereNormal(in sSphere sphere, in vec4 dp, in float lSq, in float rSq)
+vec4 createSphereNormal(out sSurface surface, in sSphere sphere, in sPointLight pointLight, 
+                        in vec3 dp, in float lSq, in float rSq)
 {
-	//return vec4(0.0, 1.0, 1.0, 1.0);   
-	//dx, dy, r
-	/* dp.z = sphere.radius * sphere.radius
-	- (dp.x * dp.x + dp.y * dp.y); //this is actually dz_sq*/
-	dp.z = rSq - lSq; //same as above(optimized)
-        
+    dp.z = rSq - lSq; //same as above(optimized)
+    
+    //Distance from center of sphere to surface?
 	vec3 pos = sphere.center.xyz + 
 	vec3(dp.x, dp.y, sqrt(dp.z));
         
 	vec3 normal = normalize(pos - sphere.center.xyz);
-	return vec4(normal * 0.5 + 0.5, 1.0);
+	//return vec4(normal * 0.5 + 0.5, 1.0); -> this is showing the normals
+    
+    //Caching Surface info
+    sSurface surface;
+    surface.surfacePoint = asPoint(dp);
+    surface.surfaceNormal = normal;
+    
+    //Testing Lambert Shading
+    float temp = calcDiffCoefficient(pointLight, surface);
+    return vec4(temp);
 }
 
 
@@ -164,8 +190,8 @@ vec4 calcColor(in vec4 rayDirection, in vec4 rayOrigin)
     sSphere sphere;
     initSphere(sphere, vec3(0.0, 0.0, -4.0), 0.5);
     sPointLight pointLight;
-    initPointlight(pointLight, vec4(0.0, 0.0, -4.0), 
-                   vec4(1.0, 0.0, 0.0, 0.0), 1.0);
+    initPointlight(pointLight, vec4(1.0, 1.0, 2.0), 
+                   vec4(1.0, 0.0, 0.0, 0.0), 100.0);
     
     
     //Testing procedural sphere (might need to be in its own function)
