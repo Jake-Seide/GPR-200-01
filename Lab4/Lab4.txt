@@ -65,21 +65,21 @@ void calcRay(out vec4 rayDirection, out vec4 rayOrigin,
 /************Data Structures************/
 struct sSphere
 {
-	vec4 center;
+	vec4 center;	//center of sphere
     float radius;	//for now
 };
     
 struct sPointLight
 {
-    vec4 center;
-    vec4 color;		//RGBA
+    vec4 center;	 //pointLight location	
+    vec4 color;		 //RGBA
     float intensity; //scalar for the lights
 };
     
 struct sSurface
 {
-    vec3 surfacePoint;
-    vec3 surfaceNormal;
+    vec3 surfacePoint;	//Where the rays collide with the surface
+    vec3 surfaceNormal;	//surface normals
 };
 /***************************************/
 
@@ -96,6 +96,7 @@ float calcDiffCoefficient(in sPointLight pointLight, in sSurface surface)
     vec3 rSurface = surface.surfacePoint;			
     vec3 surfaceNorm = surface.surfaceNormal.xyz;
     
+    //calculating light ray
     vec4 lightRay = vec4(normalize(pointLight.center.xyz - rSurface.xyz), 1.0); //optimize
    
     //float diffCoefficient = cos(uniSurfaceNorm * lightPos);
@@ -106,10 +107,12 @@ float calcDiffCoefficient(in sPointLight pointLight, in sSurface surface)
 
 float calcAttenuation(in sPointLight pointLight, in sSurface surface)
 {
+    //init p1
     float attenuatedIntensity;	//return val
     float lightRayDist;			//Set Ray distance
 	float intensity = pointLight.intensity;
-   
+   	
+    //init p2
     vec3 pointCenter = pointLight.center.xyz;
     vec3 surfacePoint = surface.surfacePoint.xyz;
     
@@ -121,6 +124,7 @@ float calcAttenuation(in sPointLight pointLight, in sSurface surface)
     float temp3z = pointCenter.x - surfacePoint.x;
     float sqTemp3z = temp3z * temp3z;
     
+    //semi optimised pow operation to calculate the light ray distance
     lightRayDist = sqrt(sqTemp1x + sqTemp2y + sqTemp3z);
     
     //operations
@@ -128,7 +132,7 @@ float calcAttenuation(in sPointLight pointLight, in sSurface surface)
     float sqLightDist = lightRayDist * lightRayDist;
     float sqIntensity = intensity * intensity;
     
-    
+    //calculate attenuated intensity 
     attenuatedIntensity = 1.0/(1.0 + divLightIntensity) 
                             + (sqLightDist/sqIntensity);
     
@@ -138,6 +142,7 @@ float calcAttenuation(in sPointLight pointLight, in sSurface surface)
 float calcSpecularCoefficient(in sPointLight pointLight, in sSurface surface, 
                               vec4 rayOrigin)
 {
+    //init variables
     float specularCoefficient;
     vec3 rSurfaceNorm = surface.surfaceNormal;
     
@@ -151,6 +156,7 @@ float calcSpecularCoefficient(in sPointLight pointLight, in sSurface surface,
     //L = LightRay, N = surfaceNormal
     vec4 refLightVec = vec4(reflect(-lightRay.xyz, surface.surfaceNormal.xyz), 1.0); 
     
+    //Calculating Specular Coefficient
     specularCoefficient = max(0.0, dot(viewVec, refLightVec));
     return specularCoefficient;
 }
@@ -168,7 +174,52 @@ float calcSpecularIntensity(in float specularCoefficient, in float highlightExpo
     return specularIntensity;
 }
 
+//blinn-phong
+float setNewHighLightExpo()
+{
+    
+    float newHighLightExpo = 1024.0;
+    
+    return newHighLightExpo;
+    
+}
+
+//modified specular cofficent
+float calcSpecCoffBlingPhong(in sPointLight pointLight, in sSurface surface, 
+                              vec4 rayOrigin)
+{
+    //creating blinSpecCoff for later calculations
+    float blinSpecCoff;
+  
+    vec3 rSurfaceNorm = surface.surfaceNormal;
+    
+    //casting surfaceNorm to a vec4 so it can be used later
+    vec4 rSurfaceNormVec4 = vec4(rSurfaceNorm, 1.0);
+    
+    
+    //calc view vector
+    vec4 viewVec = vec4(normalize(rayOrigin.xyz - 
+                                  surface.surfacePoint.xyz), 1.0);
+   
+   	//calculate halfwayVector 
+    vec4 halfwayVector = normalize(rSurfaceNormVec4 + viewVec);
+    
+    //calc blindSpecCoff;
+    blinSpecCoff = max(0.0, dot(halfwayVector, viewVec));
+    	
+    
+    return blinSpecCoff;
+}
+                       
+float calcSpecularIntenBlinPhonh(in float blinnPhonhSpecCoff, 
+                                 in float newHighLightExpo)
+{   
+    float blinPhongSpecInten = pow(blinnPhonhSpecCoff, newHighLightExpo);
+    return blinPhongSpecInten;
+}
+
 /***************************************/
+//Point light init(set location, color, and intensity)
 bool initPointLight(out sPointLight pointLight,
                    in vec3 center, in vec4 color, in float intensity)
 {
@@ -183,7 +234,8 @@ bool initPointLight(out sPointLight pointLight,
     color = vec4(1.0, 1.0, 1.0, 1.0);
     return false;
 }
-    
+ 
+//Procedural Sphere info
 bool initSphere(out sSphere sphere,
                 in vec3 center, in float radius)
 {
@@ -196,7 +248,8 @@ bool initSphere(out sSphere sphere,
     sphere.radius = 1.0;	//in case of invalid input
     return false;
 }
-    
+
+//Displaing normals + shading effects
 vec4 createSphereNormal(out sSurface surface, in sSphere sphere, in sPointLight pointLight, 
                         in vec4 dp, in float lSq, in float rSq, in vec4 rayOrigin)
 {
@@ -213,28 +266,53 @@ vec4 createSphereNormal(out sSurface surface, in sSphere sphere, in sPointLight 
     surface.surfacePoint = dp.xyz;
     surface.surfaceNormal = normal;
     
-    //Testing Lambert Shading
+    //Lambert Shading Test
     float temp1 = calcDiffCoefficient(pointLight, surface);
     float temp2 = calcAttenuation(pointLight, surface);
     float diffIntensity = temp1 * temp2;	//diff intensity
     
+   	//calculaing Lambert shading info
     vec4 normalCol = vec4(normal * 0.5 + 0.5, 1.0);
    	vec4 diffIntesityVec4 = vec4(vec3(diffIntensity), 1.0);
     vec4 lambertianColor = diffIntesityVec4 * normalCol;
-    //return lambertianColor;
     
+    
+    //Disregard
+    //testing phong shading
+    //global Ambi vars
+    //is the global ambient intensity (not light-dependent)
+    //float globalAmbiIntensity = 100000.0;
+    
+    //is the global ambient color (not light-dependent); 
+    //vec4 globalAmbiColor = vec4(0.0, 0.0, 0.0, 1.0);
+    //optimazation stuff
+    //vec4 overallGlobalAmbi = globalAmbiColor * globalAmbiIntensity;
+    
+    
+    //part 4 phong shading
     float testPhong = calcSpecularCoefficient(pointLight, surface, rayOrigin);
     float testExpo = setHighlightExpo();
     
     float testPhongIntensity = calcSpecularIntensity(testPhong, testExpo);
     
-    /*return vec4(testPhongIntensity, testPhongIntensity, 
-                testPhongIntensity, 1.0);*/
     
     vec4 phongColor;
     vec4 lightSpecularVec4 = vec4(vec3(testPhongIntensity), 1.0);
     phongColor = lambertianColor + lightSpecularVec4 * pointLight.color;
-    return phongColor;
+    return phongColor; //returning Phong  
+    
+    
+    
+    //testing blinn phong shading(not working)
+    float testBlinPhong = calcSpecCoffBlingPhong(pointLight, surface, rayOrigin);
+    float testBlinPhongExpo = setNewHighLightExpo();
+    
+    float testBlinPhongInten = calcSpecularIntenBlinPhonh(testBlinPhong, testBlinPhongExpo);
+    
+   	vec4 blinPhongCol;
+    vec4 blinPhonhLightSpecVec4 = vec4(vec3(testBlinPhongInten), 1.0);
+    blinPhongCol = /*overallGlobalAmbi*/(lambertianColor + blinPhonhLightSpecVec4) * pointLight.color;
+    //return blinPhongCol; 
 }
 
 
