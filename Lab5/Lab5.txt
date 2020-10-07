@@ -1,4 +1,6 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+//Assigment by: Jake Seide and Joseph Tecce
+//Using Shadertoy Copywrite User Agreement
 
 //------------------------------------------------------------
 // TYPE ALIASES & UTILITY FUNCTIONS
@@ -29,6 +31,9 @@
 // color4: alias for RGBA color, which is non-spatial
 // 	(this is non-spatial so neither a point nor vector)
 #define color4 vec4
+
+//This is a const definition of pi
+#define pi 3.141592653589793
 
 
 // asPoint: promote a 3D vector into a 4D vector 
@@ -168,6 +173,30 @@ void initRayOrtho(out sRay ray,
 //------------------------------------------------------------
 // RENDERING FUNCTIONS
 
+//Used Book of Shaders and Khan Academy as math references
+//Link: https://thebookofshaders.com/08/
+//Link: https://www.khanacademy.org/math/linear-algebra/matrix-transformations/lin-trans-examples/v/linear-transformation-examples-rotations-in-r2?modal=1
+vec4 getRotate3D(in sRay ray)
+{
+    
+    //sets cube location to (0,0,1) 
+    vec3 cubeLoc = ray.direction.xyz;
+    
+    //returns a 3D rotation over the 'Y' axis of of a given angle
+     mat3 rot = mat3(cos(iTime), 0, -sin(iTime),
+                   0, 1, 0,
+                sin(iTime), 0, cos(iTime));
+    
+   	cubeLoc = rot * cubeLoc; 	//rotate cubeMap
+    cubeLoc += sin(cubeLoc * 30.0 + iTime) * 0.02; 	//distort cubeMap
+    
+    //puts texture on screen
+    vec4 rotText = texture(iChannel2, cubeLoc);
+    
+    return rotText;
+}
+
+
 // NOT ORIGINAL WORK!!! IDEAS FROM GIT-HUB BY: Matt Deslauriers
 // LINK: https://github.com/mattdesl/lwjgl-basics/wiki/ShaderLesson6#lambertian-illumination-model
 // ALSO GOT SOME OPTIMAZATION IDEAS FROM SHADERTOY USER: Hexus
@@ -223,16 +252,15 @@ vec4 LambertShading(in vec2 loc, in vec2 uv)
 // Link: https://stackoverflow.com/questions/36174431/how-to-make-a-wave-warp-effect-in-shader
 sCoord WaveDistortion(in sCoord loc)
 {
-    
-    loc.x += sin(loc.y * 30.0 + iTime) * 0.012;
-    loc.y += sin(loc.x * 30.0 + iTime) * 0.012;
+    //Making texture using sin wave over time
+    loc += sin(loc * 30.0 + iTime) * 0.012;
     
     return loc;
 }
 
 vec4 CrossFade(in vec2 loc)
 {
-    // Cross-Fade
+    // Cross-Fade two textures
     return vec4(mix(texture(iChannel0, loc), texture(iChannel1, loc), abs(sin(iTime / 2.0))));
 }
 
@@ -249,17 +277,8 @@ color4 calcColor(in sViewport vp, in sRay ray)
     sScalar ratio = res.y * vp.resolutionInv.y;
     sCoord loc = px / res; // relative to texture (strech be gone!)
     
-    //sCoord loc1 = 1.0 * (px / res); // *Zoom* relative to texture (strech be gone!)
-    //loc = ratio * loc1; // Proper Zoom
-    //loc = ratio * (loc1 + 0.25); // zoom + shift, have to finnic around with it
-    //this is used for black hole, just ad deferamation influence in the center point
-    //loc = ratio * loc + 0.25 * iTime; // zoom + shift + constantly moving across screen,
-    // Documentation on texture here: https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/texture.xhtml
-    // First parameter: texture itself
-    // Second Paramater, coords themselves
-    //return texture(iChannel0, loc); // full RGBA
-    //return texture(iChannel0, loc).rrrr; // grayscale
 
+    //Normalizing Screen resolution to pixel coordinate
     vec2 uv = vp.pixelCoord.xy / iResolution.xy;
     
     // Cross-Fade Here
@@ -270,22 +289,11 @@ color4 calcColor(in sViewport vp, in sRay ray)
     //return texture(iChannel0, uv);
     
     // Shading & Textures Effect Here
-    return LambertShading(loc, uv);
+    //return LambertShading(loc, uv);
     
-    
-    // All needed for lgithing is a 3d point in space for surface, and a normal
-    // test surface positon and normal
-    //return vp.viewportPoint;
-    //return vec4(0.0, 0.0, 1.0, 1.0); // Test z-axis 
-    //return vec4(normalize(vec3(vp.viewportPoint.xy, 1.0)), 1.0);
-    
-    // Cube map
-    // sampler type: 'samplerCube'
-    vec3 cubeLoc = ray.direction.xyz;
-    // 3D rotation matrix
-    // cubeLoc = rot * cubeLoc;
-    //return vec4(cubeLoc, 1.0);
-    //return texture(iChannel2, cubeLoc);
+    // Cube Map Stuff Here
+    //return getRotate3D(ray); 
+        
 }
 
 
@@ -312,3 +320,4 @@ void mainImage(out color4 fragColor, in sCoord fragCoord)
     initRayPersp(ray, eyePosition, vp.viewportPoint.xyz);
     fragColor += calcColor(vp, ray);
 }
+
