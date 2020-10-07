@@ -62,7 +62,6 @@ sScalar lengthSq(sVector x)
     return dot(x, x);
 }
 
-
 //------------------------------------------------------------
 // VIEWPORT INFO
 
@@ -169,33 +168,67 @@ void initRayOrtho(out sRay ray,
 //------------------------------------------------------------
 // RENDERING FUNCTIONS
 
-
-// NOT ORIGINAL WORK!!! GOT IDEA FROM SHADERTOY USER: n_pierotti
-// LINK: https://www.shadertoy.com/view/4sGBz3
-
-sCoord WaveDistortion(in sCoord loc, in vec2 uv)
+// NOT ORIGINAL WORK!!! IDEAS FROM GIT-HUB BY: Matt Deslauriers
+// LINK: https://github.com/mattdesl/lwjgl-basics/wiki/ShaderLesson6#lambertian-illumination-model
+// ALSO GOT SOME OPTIMAZATION IDEAS FROM SHADERTOY USER: Hexus
+// LINK: https://www.shadertoy.com/view/MsyXz3
+vec4 LambertShading(in vec2 loc, in vec2 uv)
 {
-    //uv.x = (0.55 * uv.x) + 0.5;
-    //uv.y = (-0.55 * uv.y) + 0.5;
+    // Light Intensity
+    float intensity = 1.0;
+    // This is a "uniform" that was just manually made to help with the position of the light
+    vec3 falloff = vec3(0.1, 3.0, 10.0);
     
-    //float x = sin(25.0 * loc.y + 30.0 * loc.x + 6.28 * iTime) / 100.0; 
-    //float y = sin(25.0 * loc.y + 30.0 * loc.x + 6.28 * iTime) / 100.0;   
+    // Calculate the lights position
+    // Also animates light to move from one side the other of the screen
+    //vec3 lightDir = vec3(sin(iTime * 0.5), sin(iTime * 0.5), 0.05);
+    vec3 lightPos = vec3(sin(iTime * 0.5), sin(iTime * 0.5), 0.05);
+    lightPos.xy = lightPos.xy * 0.3 + 0.5;
+    
+    // Gets the texture we are diffusing
+    vec4 diffuseTex = texture(iChannel0, loc);
+    
+    // Light from texture coords not uv coord
+    vec3 delta  = vec3(lightPos.xy - uv.xy, lightPos.z);
+    
+    // Fixed Light radius
+    //delta.x /= 256.0 / iResolution.x;
+    //delta.y /= 256.0 / iResolution.y;
+    delta.xy /= 100.0 / iResolution.xy;
+    
+    // calculating distance from texture to the light
+    float d = length(delta);
+    
+    // Calculates the distance between light, the intesity of light, and the falloff
+    //float IL = 1.0 / (1.0 + d / pointLight.lIntensity + (d * d) / 
+    //                  								(pointLight.lIntensity * pointLight.lIntensity));
+    // 
+    float attenuation = intensity / (falloff.x + (falloff.y * d) + (falloff.z * d * d));
+    
+    // Combining Diffusion and and attenuation
+    vec3 light = diffuseTex.rgb * attenuation;
+    
+    // Correcting Gamma
+    light = pow(light, vec3(1.0 / 2.2));
 
-    //return vec2(loc.x + x, loc.y + y) * iTime;
+    // Lambert Reflectance
+    // Multiplying the actual texture RGB to the persedual light
+    vec4 shading = vec4(diffuseTex.rgb * light, 1.0);
     
-    //loc.x += sin(loc.y * 5.2 + iTime * 1.4) / 100.0;
-    //loc.y += sin(loc.x * 5.1 + iTime * 1.4) / 100.0;
-    
-    loc.x += sin(loc.y * 30.0 + iTime) /100.0;
-    loc.y += sin(loc.x * 30.0 + iTime) /100.0;
-    
-    return loc;
-    
-    //sCoord deformedLocation;
-    //deformedLocation = sin(loc * iTime); // do something
-    //return deformedLocation;
+    return shading;
 }
 
+
+// Idea for how to make the wave was gotton from Stack overflow
+// Link: https://stackoverflow.com/questions/36174431/how-to-make-a-wave-warp-effect-in-shader
+sCoord WaveDistortion(in sCoord loc)
+{
+    
+    loc.x += sin(loc.y * 30.0 + iTime) * 0.012;
+    loc.y += sin(loc.x * 30.0 + iTime) * 0.012;
+    
+    return loc;
+}
 
 vec4 CrossFade(in vec2 loc)
 {
@@ -207,19 +240,7 @@ vec4 CrossFade(in vec2 loc)
 //	  vp:  input viewport info
 //	  ray: input ray info
 color4 calcColor(in sViewport vp, in sRay ray)
-{
-    vec2 uv = vp.pixelCoord.xy / iResolution.xy;
-    
-    // test inputs
-    //return color4(ray.direction.xyz == vp.viewportPoint.xyz); // pass
-    //return color4(lengthSq(vp.viewportPoint.xy) >= 0.25); // pass
-    //return color4(vp.uv, 0.0, 0.0);
-    //return color4(vp.ndc, 0.0, 0.0);
-    //return vp.viewportPoint;
-    
-    // const color
-    //return vec4(1.0, 0.0, 0.0, 1.0);
-    
+{    
     // texture (full-screen)
     //sampler2D tex = iChannel0;
     //sCoord loc = vp.uv; // relative to display (makes it stretched)
@@ -227,7 +248,6 @@ color4 calcColor(in sViewport vp, in sRay ray)
     sDCoord res = iChannelResolution[0].xy;
     sScalar ratio = res.y * vp.resolutionInv.y;
     sCoord loc = px / res; // relative to texture (strech be gone!)
-    
     
     //sCoord loc1 = 1.0 * (px / res); // *Zoom* relative to texture (strech be gone!)
     //loc = ratio * loc1; // Proper Zoom
@@ -240,16 +260,17 @@ color4 calcColor(in sViewport vp, in sRay ray)
     //return texture(iChannel0, loc); // full RGBA
     //return texture(iChannel0, loc).rrrr; // grayscale
 
+    vec2 uv = vp.pixelCoord.xy / iResolution.xy;
     
-    
-    //Cross-Fade Here
+    // Cross-Fade Here
     //return CrossFade(loc);
     
-    uv = WaveDistortion(loc, uv);
-    
     // Distrotion Effect Here
-    //return vec4(uv, 0.0, 0.0);
-    return texture(iChannel0, uv);
+    //uv = WaveDistortion(loc);
+    //return texture(iChannel0, uv);
+    
+    // Shading & Textures Effect Here
+    return LambertShading(loc, uv);
     
     
     // All needed for lgithing is a 3d point in space for surface, and a normal
