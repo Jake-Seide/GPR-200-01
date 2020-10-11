@@ -1,4 +1,32 @@
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
+// GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+//  -> Buffer B (Scene)
+
+// Getting Luminacity color for each pixel
+float Luma(in vec3 color)
 {
-    fragColor = vec4(0.0,0.0,1.0,1.0);
+    return 0.2126 * color.r + 
+           0.7152 * color.g + 
+           0.0722 * color.b;
+}
+
+vec4 TonePass(in sCoord fragCoord)
+{
+    // Getting texture coord
+    sCoord uv = fragCoord / iChannelResolution[0].xy;
+    
+    // Gets the Texture
+    vec4 val = texture(iChannel0, uv);
+    
+    // Getting Contraits for Tone Effect ****OPTIMIZE****
+    return val * clamp(Luma(val.rgb) -LumThresh, 0.0, 1.0) *
+        		      (1.0 / (1.0 - LumThresh)); 
+}
+
+// mainImage: process the current pixel (exactly one call per pixel)
+//    fragColor: output final color for current pixel
+//    fragCoord: input location of current pixel in image (in pixels)
+void mainImage(out color4 fragColor, in sCoord fragCoord)
+{
+    // Calling TonePass Funciton
+    fragColor = TonePass(fragCoord);
 }
