@@ -32,7 +32,7 @@
 #define color4 vec4
 
 // Define LumThresh
-#define LumThresh 0.5
+#define lumThresh 0.5
 
 // ANYTHING USED MORE THEN ONCE PUT HERE, ITS LIKE A HEADER FILE, BUT NOT
 

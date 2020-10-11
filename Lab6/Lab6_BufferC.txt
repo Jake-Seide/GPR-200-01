@@ -1,0 +1,41 @@
+// GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+//  -> Buffer C (scene)
+
+//------------------------------------------------------------
+// SHADERTOY MAIN
+
+vec4 blurPass(in sCoord uv)
+{
+    float temp = .05;
+    float weight[10] = float[](temp,temp,temp,temp,temp,temp,temp,temp,temp,temp);
+    float pixelOffset[10] = float[](0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0);
+    float screen_height = 704.0;
+        
+    float dy = 1.0 /float(screen_height);
+    vec4 sum = texture(iChannel0, uv) * weight[0];
+    for(int i = 1; i < 10; ++i)
+    {
+    	sum += texture(iChannel0, uv + 
+                      vec2(0.0, pixelOffset[i]) * dy) * weight[i];
+        sum += texture(iChannel0, uv - 
+                      vec2(0.0, pixelOffset[i]) * dy) * weight[i];
+    }
+    
+	return sum;   
+}
+
+
+// mainImage: process the current pixel (exactly one call per pixel)
+//    fragColor: output final color for current pixel
+//    fragCoord: input location of current pixel in image (in pixels)
+void mainImage(out color4 fragColor, in sCoord fragCoord)
+{
+    // setup
+    // test UV for input image
+    sCoord uv = fragCoord / iChannelResolution[0].xy;
+    
+    // TESTING
+    // set iChannel0 to 'Misc/Buffer A' and fetch sample
+    //fragColor = texture(iChannel0, uv);
+    fragColor = blurPass(uv);
+}
