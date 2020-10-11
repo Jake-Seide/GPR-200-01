@@ -1,0 +1,67 @@
+// GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+//  -> BUFFER A TAB (scene)
+
+//------------------------------------------------------------
+// RENDERING FUNCTIONS
+
+//Used Lab5's getRotate3D fuction
+vec4 getRotate3D(in sRay ray)
+{
+    
+    //sets cube location to (0,0,1) 
+    vec3 cubeLoc = ray.direction.xyz;
+    
+    //returns a 3D rotation over the 'Y' axis of of a given angle
+     mat3 rot = mat3(cos(iTime), 0, -sin(iTime),
+                   0, 1, 0,
+                sin(iTime), 0, cos(iTime));
+    
+   	//Rotate Cubemap
+    cubeLoc = rot * cubeLoc;
+    
+    //puts texture on screen
+    vec4 rotText = texture(iChannel0, cubeLoc);
+    
+    return rotText;
+}
+
+// calcColor: calculate the color of current pixel
+//	  vp:  input viewport info
+//	  ray: input ray info
+color4 calcColor(in sViewport vp, in sRay ray)
+{
+    // test inputs
+    //return color4(ray.direction.xyz == vp.viewportPoint.xyz); // pass
+    //return color4(lengthSq(vp.viewportPoint.xy) >= 0.25); // pass
+    //return color4(vp.uv, 0.0, 0.0);
+    //return color4(vp.ndc, 0.0, 0.0);
+    //return asPoint(sBasis(vp.viewportPoint.xy, -vp.viewportPoint.z));
+    
+    // Cube Map Stuff Here
+    return getRotate3D(ray);  
+}
+
+
+//------------------------------------------------------------
+// SHADERTOY MAIN
+
+// mainImage: process the current pixel (exactly one call per pixel)
+//    fragColor: output final color for current pixel
+//    fragCoord: input location of current pixel in image (in pixels)
+void mainImage(out color4 fragColor, in sCoord fragCoord)
+{
+    // viewing plane (viewport) inputs
+    const sBasis eyePosition = sBasis(0.0);
+    const sScalar viewportHeight = 2.0, focalLength = 1.5;
+    
+    // viewport info
+    sViewport vp;
+
+    // ray
+    sRay ray;
+    
+    // render
+    initViewport(vp, viewportHeight, focalLength, fragCoord, iResolution.xy);
+    initRayPersp(ray, eyePosition, vp.viewportPoint.xyz);
+    fragColor += calcColor(vp, ray);
+}
