@@ -31,6 +31,10 @@
 // 	(this is non-spatial so neither a point nor vector)
 #define color4 vec4
 
+// Define LumThresh
+#define LumThresh 0.5
+
+// ANYTHING USED MORE THEN ONCE PUT HERE, ITS LIKE A HEADER FILE, BUT NOT
 
 // asPoint: promote a 3D vector into a 4D vector 
 //	representing a point in space (w=1)
@@ -181,9 +185,9 @@ void initRayOrtho(out sRay ray,
 // latest version or whichever is used
 #version 300 es
 
-// **CONTENTS OF COMMON TAB PASTED HERE**
-
 // PROGRAM UNIFORMS (see 'Shader Inputs' dropdown)
+
+// **CONTENTS OF COMMON TAB PASTED HERE**
 
 // **CONTENTS OF BUFFER TAB PASTED HERE**
 
