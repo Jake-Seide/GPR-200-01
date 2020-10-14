@@ -1,19 +1,29 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+// Assigment by: Jake Seide and Joseph Tecce
+// Using Shadertoy Copywrite User Agreement
+
 //  -> Buffer C (scene)
 
 //------------------------------------------------------------
 // SHADERTOY MAIN
 
-//Using Cookbook as reference
+// Referening CookBook By: David Wolff
 vec4 blurPass(in sCoord uv)
 {
     float temp = .05;
+    // Blur weight
     float weight[10] = float[](temp,temp,temp,temp,temp,temp,temp,temp,temp,temp);
+    
+    // Blur pixel Offset
     float pixelOffset[10] = float[](0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0);
-    float screen_height = iResolution.y;
-        
-    float dy = 1.0 /float(screen_height); //optimize
+ 
+    // Resiprical of the screen height    
+    float dy = 1.0 / iResolution.y; //float(screen_height);
+    
+    // Setting Sum Vector
     vec4 sum = texture(iChannel0, uv) * weight[0];
+    
+    // Blur Computation
     for(int i = 1; i < 10; ++i)
     {
     	sum += texture(iChannel0, uv + 

@@ -1,4 +1,7 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+// Assigment by: Jake Seide and Joseph Tecce
+// Using Shadertoy Copywrite User Agreement
+
 //  -> BUFFER A TAB (scene)
 
 //------------------------------------------------------------

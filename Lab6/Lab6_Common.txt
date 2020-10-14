@@ -1,4 +1,7 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+// Assigment by: Jake Seide and Joseph Tecce
+// Using Shadertoy Copywrite User Agreement
+
 //  -> COMMON TAB (shared with all other tabs)
 
 //------------------------------------------------------------
@@ -22,7 +25,6 @@
 // sVector: alias for a vector/displacement/change in space
 #define sVector vec4
 
-
 // color3: alias for a 3D vector representing RGB color
 // 	(this is non-spatial so neither a point nor vector)
 #define color3 vec3
@@ -33,7 +35,6 @@
 
 // Define LumThresh
 #define lumThresh 0.5
-
 
 // ANYTHING USED MORE THEN ONCE PUT HERE, ITS LIKE A HEADER FILE, BUT NOT
 
