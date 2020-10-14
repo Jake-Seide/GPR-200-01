@@ -4,14 +4,15 @@
 //------------------------------------------------------------
 // SHADERTOY MAIN
 
+//Using Cookbook as reference
 vec4 blurPass(in sCoord uv)
 {
     float temp = .05;
     float weight[10] = float[](temp,temp,temp,temp,temp,temp,temp,temp,temp,temp);
     float pixelOffset[10] = float[](0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0);
-    float screen_height = 704.0;
+    float screen_height = iResolution.y;
         
-    float dy = 1.0 /float(screen_height);
+    float dy = 1.0 /float(screen_height); //optimize
     vec4 sum = texture(iChannel0, uv) * weight[0];
     for(int i = 1; i < 10; ++i)
     {
@@ -21,9 +22,8 @@ vec4 blurPass(in sCoord uv)
                       vec2(0.0, pixelOffset[i]) * dy) * weight[i];
     }
     
-	return sum;   
+	return sum;
 }
-
 
 // mainImage: process the current pixel (exactly one call per pixel)
 //    fragColor: output final color for current pixel

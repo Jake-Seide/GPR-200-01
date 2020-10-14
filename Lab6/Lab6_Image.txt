@@ -3,6 +3,15 @@
 
 //------------------------------------------------------------
 // SHADERTOY MAIN
+vec4 ImageComposite(in sCoord uv)
+{
+    vec4 val = texture(iChannel0, uv);
+    vec4 sum = texture(iChannel2, uv);
+    
+    //return bloomed cubemap
+   	return mix(val, sum, .01);   
+}
+
 
 // mainImage: process the current pixel (exactly one call per pixel)
 //    fragColor: output final color for current pixel
@@ -16,5 +25,6 @@ void mainImage(out color4 fragColor, in sCoord fragCoord)
     // TESTING
     // set iChannel0 to 'Misc/Buffer A' and fetch sample
     //fragColor = texture(iChannel0, uv);
-    fragColor = texture(iChannel2, uv);
+    //fragColor = texture(iChannel1, uv);
+    fragColor = ImageComposite(uv);
 }

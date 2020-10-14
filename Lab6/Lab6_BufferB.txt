@@ -18,8 +18,8 @@ vec4 TonePass(in sCoord fragCoord)
     vec4 val = texture(iChannel0, uv);
     
     // Getting Contraits for Tone Effect ****OPTIMIZE****
-    return val * clamp(Luma(val.rgb) -LumThresh, 0.0, 1.0) *
-        		      (1.0 / (1.0 - LumThresh)); 
+    return val * clamp(Luma(val.rgb) -lumThresh, 0.0, 1.0) *
+        		      (1.0 / (1.0 - lumThresh)); 
 }
 
 // mainImage: process the current pixel (exactly one call per pixel)
