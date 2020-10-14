@@ -1,0 +1,14 @@
+// Assigment by: Jake Seide and Joseph Tecce
+// Using Shadertoy Copywrite User Agreement
+
+vec2 mainSound( float time )
+{   
+    // A 440 Hz wave that attenuates quickly overt time
+    vec2 sound = vec2(sin(6.2831 * 440.0 * time) * exp(-3.0 * time));
+    
+    // Actually distorting Sound
+    vec2 distort = sin(sound.xy * 100.0 * time) * 0.05;
+
+	// Reterning distortion
+    return distort;
+}

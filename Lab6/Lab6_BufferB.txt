@@ -1,7 +1,12 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+// Assigment by: Jake Seide and Joseph Tecce
+// Using Shadertoy Copywrite User Agreement
+
 //  -> Buffer B (Scene)
 
+
 // Getting Luminacity color for each pixel
+// Referening CookBook By: David Wolff
 float Luma(in vec3 color)
 {
     return 0.2126 * color.r + 
@@ -9,6 +14,8 @@ float Luma(in vec3 color)
            0.0722 * color.b;
 }
 
+// Brightening and darkening pixels based on luminocity
+// Referening CookBook By: David Wolff
 vec4 TonePass(in sCoord fragCoord)
 {
     // Getting texture coord
@@ -17,8 +24,8 @@ vec4 TonePass(in sCoord fragCoord)
     // Gets the Texture
     vec4 val = texture(iChannel0, uv);
     
-    // Getting Contraits for Tone Effect ****OPTIMIZE****
-    return val * clamp(Luma(val.rgb) -lumThresh, 0.0, 1.0) *
+    // Getting Contraits for Tone Effect
+    return val * clamp(Luma(val.rgb) - lumThresh, 0.0, 1.0) *
         		      (1.0 / (1.0 - lumThresh)); 
 }
 

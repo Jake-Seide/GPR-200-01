@@ -1,10 +1,17 @@
 // GLSL STARTER CODE BY DANIEL S. BUCKSTEIN
+// Assigment by: Jake Seide and Joseph Tecce
+// Using Shadertoy Copywrite User Agreement
+
 //  -> IMAGE TAB (final)
 
 //------------------------------------------------------------
 // SHADERTOY MAIN
+
+// Compositing Image Buffers
+// Referencing CookBook By: David Wolff
 vec4 ImageComposite(in sCoord uv)
 {
+    // Setting Val and Sum
     vec4 val = texture(iChannel0, uv);
     vec4 sum = texture(iChannel2, uv);
     
