@@ -1,0 +1,155 @@
+/*
+const float PI = 3.14159;
+
+// http://github.prideout.net/barrel-distortion/
+vec2 distort(vec2 p, float power)
+{
+    float a  = atan(p.y, p.x);
+    float r = length(p);
+    r = pow(r, power);
+    return vec2(r * cos(a), r*sin(a));
+	//return vec2((a / PI), r*2.0-1.0);	// polar
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // create pixel coordinates
+	vec2 uv = fragCoord.xy / iResolution.xy;
+	
+	// distort
+	float bass = texture( iChannel0, vec2(0, 0) ).x;		
+	uv = distort(uv*2.0-1.0, 0.5+bass)*0.5+0.5;
+		
+	// quantize coordinates
+	const float bands = 20.0;
+	const float segs = 20.0;
+	vec2 p;
+	p.x = floor(uv.x*bands)/bands;
+	p.y = floor(uv.y*segs)/segs;
+	
+	// read frequency data from first row of texture
+	float fft  = texture( iChannel0, vec2(p.x,0.0) ).x;	
+
+	// led color
+	vec3 color = mix(vec3(0.0, 2.0, 0.0), vec3(2.0, 0.0, 0.0), sqrt(uv.y));
+	
+	// mask for bar graph
+	float mask = (p.y < fft) ? 1.0 : 0.0;
+	
+	// led shape
+	vec2 d = fract((uv - p)*vec2(bands, segs)) - 0.5;
+	float led = smoothstep(0.5, 0.3, abs(d.x)) *
+		        smoothstep(0.5, 0.3, abs(d.y));
+	vec3 ledColor = led*color*mask;
+
+    // second texture row is the sound wave
+	float wave = texture( iChannel0, vec2(uv.x, 0.75) ).x;
+	vec3 waveColor = vec3(0.001, 0.01, 0.04) / abs(wave - uv.y);
+		
+	// output final color
+	//fragColor = vec4(vec3(fft),1.0);
+    //fragColor = vec4(d, 0.0, 1.0);
+	//fragColor = vec4(ledColor, 1.0);
+	//fragColor = vec4(waveColor, 1.0);
+	fragColor = vec4(ledColor + waveColor, 1.0);
+}
+*/
+
+
+#define numOfBars 60.0
+#define barThickness 0.01
+#define boarderColor vec3(0.0, 0.5, 1.0)
+
+#define barStart 0.37
+#define barEnd 0.94
+
+float opS(float a, float b)
+{
+    return min(a, -b);
+}
+
+float getSoundData(float i)
+{
+    return 1.5 * pow (texture(iChannel0, vec2( i / numOfBars, 0.25)).x, 3.0);
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+
+    //uv.x -= 0.5;
+    //uv.y -= 0.5;
+    
+    // Attempt 3
+    //float wave = texture(iChannel0, vec2(uv.x, 1.0)).x;
+	//vec3 waveColor = vec3(0.001, 0.01, 0.04) / abs(wave - uv.y);//abs(wave.xyz - uv.y);
+    
+    
+    // Setting segs and bands
+    float bands = 20.0;
+    float segs = 20.0;
+    vec2 p;
+    
+    // Geting segs and bands cords???
+    p.x = floor(uv.x * bands) / bands;
+    p.y = floor(uv.y * segs) / segs;
+    
+    float fft = texture(iChannel0, vec2(p.x, 0.0)).x + 0.5;
+    //fft = fft * -1.0;
+    //float fft2 = texture(iChannel0, vec2(p.x, 0.0)).x * -1.0 ;
+    //texture(iChannel0)
+    
+    // clamp colors
+	vec3 color = mix(vec3(0.0, 2.0, 0.0), vec3(2.0, 0.0, 2.0), sqrt(uv.y));
+    
+    // mask for bar graph
+	//float mask2 = (p.y < fft2) ? 1.0 : 0.0;
+    //float mask3 = ((p.y < fft) ? 0.5 : 0.0) * -1.0 + 0.5;
+    float mask = ((p.y < fft) ? 0.5 : 0.0);// + 0.5;
+    //float ultamateMask = mask + mask3;
+    //float mask2 = (p.y > 
+	
+	// led shape
+	vec2 d = fract((uv - p) * vec2(bands, segs));
+	float led = smoothstep(1.0, 0.3, abs(d.x)) *
+		        smoothstep(1.0, 0.3, abs(d.y));
+	vec3 ledColor = led * color * mask;
+    
+    //vec2 d2 = fract((uv - p) * vec2(bands, segs));
+	//float led2 = smoothstep(1.0, 0.3, abs(d.x)) *
+	//	        smoothstep(1.0, 0.3, abs(d.y));
+	//vec3 ledColor2 = led2 * color * mask2;
+    
+    fragColor = vec4(ledColor, 1.0);
+    
+    
+    // Attempt 2
+    //float barID = floor((length(uv) - barStart) / (barEnd - barStart) * numOfBars);
+    
+    //float d;
+    //if(barID >= 0.0 && barID < numOfBars)
+    //{
+    //    float barWidth = (barEnd - barStart) / numOfBars;
+    //    float start = barStart + barWidth * (barID + 0.25);
+    //    float barAngle = texture(iChannel0, vec2(1.0 - barID / numOfBars, 0.25)).x * .25; // Important
+        
+    //    d = min(((start + barWidth / 2.0) + start) / 2.0, ((start + barWidth / 2.0) - start) / 2.0);
+    //}
+    
+    // Attempt 1
+    //float soundData = getSoundData(floor(uv.x * numOfBars));
+    
+    // In charge of color of bars and background color
+    //vec3 color = uv.y < soundData - barThickness ? vec3(0, 0.3 + 0.7 * soundData, 0.3)
+    //    		 : uv.y < soundData ? boarderColor : vec3 (0);
+
+    // Attempt 2
+    //float w = min(fwidth(d), 0.01);
+    //fragColor = vec4(vec3(smoothstep(-w, w, d)), 1.0);
+    
+    // Output to screen
+    //fragColor = vec4(color, 1.0); // Attempt 1
+    
+    //fragColor = vec4(waveColor, 1.0);
+}
