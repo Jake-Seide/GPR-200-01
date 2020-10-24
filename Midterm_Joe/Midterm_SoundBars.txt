@@ -1,0 +1,44 @@
+#define bands 20.0
+#define segs 20.0
+
+vec3 SoundBarCreation(in vec2 uv) //in float uvX, in float uvY)
+{
+    vec2 pos;
+    
+    // Geting segs and bands cords
+    pos.x = floor(uv.x * bands) / bands;
+    pos.y = floor(uv.y * segs) / segs;
+    
+    // Getting Sound Data
+    float fft = texture(iChannel0, vec2(pos.x, 0.0)).x;
+    
+    // clamp colors
+	vec3 color = mix(vec3(0.5, 0.7, 0.0), vec3(0.5, 0.0, 1.0), abs(uv.y));
+    
+    // mask for bar graph
+    float mask = ((pos.y < fft) ? 1.0 : -2.0);// + 0.5;                       
+    
+	// led shape
+	vec2 d = fract((uv - pos) * vec2(bands, segs));
+	float led = smoothstep(1.0, 0.3, abs(d.x)) *
+		        smoothstep(1.0, 0.3, abs(d.y));
+    
+    // Multiplying all data together
+	vec3 ledColor = led * color * mask;
+    
+    return ledColor;
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;
+        
+    // Sound Bar creation
+   	uv.y = uv.y - 0.5;
+    vec3 soundBarUp = SoundBarCreation(uv);
+    uv.y = uv.y * -1.0;
+    vec3 soundBarDown = SoundBarCreation(uv);
+    
+    fragColor = vec4(soundBarUp + soundBarDown, 1.0);
+}
