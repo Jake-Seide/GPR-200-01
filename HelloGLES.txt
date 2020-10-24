@@ -1,0 +1,46 @@
+#version 300 es
+
+//MAIN DUTY: READ ATTRIBUTES
+//e.g. 3D pos
+//e.g. uv: texture coord
+//e.g. surface normal
+
+//Declaring attribute
+layout (location = 0) in vec4 aPos; 
+
+//VARYING(vs)
+out vec4 vColor;
+
+void main()
+{
+	//REQUIRED: SET THIS VALUE!!!
+	gl_Position = aPos;
+	
+	//OPTINAL: write varyings 
+	//vColor = vec4(1.0, 0.5, 0.0,1.0);
+	vColor = aPos;
+}
+
+**********************************************
+
+#version 300 es
+
+//Only for GLSL ES
+#ifdef GL_ES
+precision highp float;
+#endif //GLES
+
+
+//declare output
+//layout (location = 0) out vec4 rtFragColor
+out vec4 rtFragColor;
+
+//VARYING(ps)
+in vec4 vColor;
+
+//Both ps and vs need a main
+void main()
+{
+	//rtFragColor = vec4(0.0, 1.0, 1.0, 1.0);
+	rtFragColor = vColor;
+}
