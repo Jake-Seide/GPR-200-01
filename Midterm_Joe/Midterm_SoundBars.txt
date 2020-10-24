@@ -1,54 +1,175 @@
+#define bands 20.0
+#define segs 20.0
+
+/*
+#define time iTime
+
+float noise3D(vec3 p)
+{
+	return fract(sin(dot(p ,vec3(12.9898,78.233,12.7378))) * 43758.5453)*2.0-1.0;
+}
+
+vec3 mixc(vec3 col1, vec3 col2, float v)
+{
+    v = clamp(v,0.0,1.0);
+    return col1+v*(col2-col1);
+}
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    // Normalized pixel coordinates (from 0 to 1)
-    vec2 topUV = fragCoord/iResolution.xy;
+	vec2 uv = fragCoord.xy / iResolution.xy;
+    uv.y = uv.y - 0.1;
+    vec2 p = uv*2.0-1.0;
+    p.x*=iResolution.x/iResolution.y;
+    p.y+=0.5;
+    
+    vec3 col = vec3(0.0);
+    vec3 ref = vec3(0.0);
+   
+    float nBands = 64.0;
+    float i = floor(uv.x*nBands);
+    float f = fract(uv.x*nBands);
+    float band = i/nBands;
+    band *= band*band;
+    band = band*0.995;
+    band += 0.005;
+    float s = texture( iChannel0, vec2(band,0.25) ).x;
+    
+    /* Gradient colors and amount here */
+	/*    
+	const int nColors = 4;
+    vec3 colors[nColors];  
+    colors[0] = vec3(0.0,0.0,1.0);
+    colors[1] = vec3(0.0,1.0,1.0);
+    colors[2] = vec3(1.0,1.0,0.0);
+    colors[3] = vec3(1.0,0.0,0.0);
+    
+    vec3 gradCol = colors[0];
+    float n = float(nColors)-1.0;
+    for(int i = 1; i < nColors; i++)
+    {
+		gradCol = mixc(gradCol,colors[i],(s-float(i-1)/n)*n);
+    }
+      
+    col += vec3(1.0-smoothstep(0.0,0.01,p.y-s*1.5));
+    col *= gradCol;
 
-    //uv.x -= 0.5;
-    //uv.y -= 0.5;
+    ref += vec3(1.0-smoothstep(0.0,-0.01,p.y+s*1.5));
+    ref*= gradCol*smoothstep(-1.0,0.0,p.y);
     
-    // Attempt 3
-    //float wave = texture(iChannel0, vec2(uv.x, 1.0)).x;
-	//vec3 waveColor = vec3(0.001, 0.01, 0.04) / abs(wave - uv.y);//abs(wave.xyz - uv.y);
+    col = mix(ref,col,smoothstep(-0.01,0.01,p.y));
+
+    col *= smoothstep(0.125,0.375,f);
+    col *= smoothstep(0.875,0.625,f);
+
+    col = clamp(col, 0.0, 1.0);
+
+    float dither = noise3D(vec3(p,time))*2.0/256.0;
+    col += dither;
     
-    
-    // Setting segs and bands
-    float bands = 20.0;
-    float segs = 20.0;
-    vec2 p;
-    
-    topUV.y = (topUV.y - 0.5);
+	fragColor = vec4(col,1.0);
+}
+*/
+
+vec3 SoundBarCreation(in vec2 uv) //in float uvX, in float uvY)
+{
+    vec2 pos;
+        
+    //uvY = uvY - 0.5;
     
     // Geting segs and bands cords???
-    p.x = floor(topUV.x * bands) / bands;
-    p.y = floor(-topUV.y * segs) / segs;
+    pos.x = floor(uv.x * bands) / bands;
+    pos.y = floor(uv.y * segs) / segs;
     
-    float fft = texture(iChannel0, vec2(p.x, 0.0)).x;
+    float fft = texture(iChannel0, vec2(pos.x, 0.0)).x;
     //fft = fft * -1.0;
     //float fft2 = texture(iChannel0, vec2(p.x, 0.0)).x * -1.0 ;
     //texture(iChannel0)
     
     // clamp colors
-	vec3 color = mix(vec3(0.0, 2.0, 0.0), vec3(2.0, 0.0, 2.0), sqrt(-topUV.y));
+	vec3 color = mix(vec3(0.5, 0.7, 0.0), vec3(0.5, 0.0, 1.0), abs(uv.y)); //* sqrt(uv.y); //mix(vec3(0.1, 0.1, 0.0), vec3(0.1, 0.1, 0.0), sqrt(uv.y));
+    //vec3 color2 = mix(vec3(0.0, 2.0, 0.0), vec3(2.0, 0.0, 2.0), sqrt(-uv.y));
     
     // mask for bar graph
 	//float mask2 = (p.y < fft2) ? 1.0 : 0.0;
     //float mask3 = ((p.y < fft) ? 0.5 : 0.0) * -1.0 + 0.5;
-    float mask = ((p.y < fft) ? 0.5 : 0.0);// + 0.5;
+    float mask = ((pos.y < fft) ? 1.0 : -2.0);// + 0.5;
+    
+    //float mask = (1.0 - smoothstep(0.0, 0.01, pos.y - fft * 1.5));
+    //float mask = pos.y + fft;
+    //float ultamateMask = mask + mask3;
+    //float mask2 = (p.y > 
+    
+    /*
+    vec3 color;
+    color += vec3(1.0 - smoothstep(0.0, 0.01, pos.y - fft * 1.5));
+    color *= grandColor;
+    
+    vec3 ref;
+    ref += vec3(1.0 - smoothstep(0.0, 0.01, pos.y - fft * 1.5));
+    ref *= grandColor * color * smoothstep(0.0, 0.5, -pos.y); 
+    
+    color = mix(ref, color, smoothstep( 0.01, 0.01, pos.y));
+    
+    color *= smoothstep(0.125,0.375,f);
+    color *= smoothstep(0.875,0.625,f);
+
+    color = clamp(color, 1.0, 1.0);
+    */                          
+    
+	// led shape
+	vec2 d = fract((uv - pos) * vec2(bands, segs));
+	float led = smoothstep(1.0, 0.3, abs(d.x)) *
+		        smoothstep(1.0, 0.3, abs(d.y));
+	vec3 ledColor = led * color * mask;//led * color * mask;
+    
+    return ledColor;
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // Normalized pixel coordinates (from 0 to 1)
+    vec2 uv = fragCoord/iResolution.xy;   
+   	uv.y = uv.y - 0.5;
+    
+    
+    /*
+    vec2 pos;
+    
+    uv.y = uv.y - 0.5;
+    
+    // Geting segs and bands cords???
+    pos.x = floor(uv.x * bands) / bands;
+    pos.y = floor(-uv.y * segs) / segs;
+    
+    float fft = texture(iChannel0, vec2(pos.x, 0.0)).x;
+    //fft = fft * -1.0;
+    //float fft2 = texture(iChannel0, vec2(p.x, 0.0)).x * -1.0 ;
+    //texture(iChannel0)
+    
+    // clamp colors
+	vec3 color = mix(vec3(0.0, 2.0, 0.0), vec3(2.0, 0.0, 2.0), sqrt(-uv.y));
+    
+    // mask for bar graph
+	//float mask2 = (p.y < fft2) ? 1.0 : 0.0;
+    //float mask3 = ((p.y < fft) ? 0.5 : 0.0) * -1.0 + 0.5;
+    float mask = ((pos.y < fft) ? 0.7 : 0.0);// + 0.5;
     //float ultamateMask = mask + mask3;
     //float mask2 = (p.y > 
 	
 	// led shape
-	vec2 d = fract((-topUV - p) * vec2(bands, segs));
+	vec2 d = fract(((uv.x + uv.y) - pos) * vec2(bands, segs));
 	float led = smoothstep(1.0, 0.3, abs(d.x)) *
 		        smoothstep(1.0, 0.3, abs(d.y));
 	vec3 ledColor = led * color * mask;
+    */
+
+    vec3 soundBarUp = SoundBarCreation(uv);
+    uv.y = uv.y * -1.0;
+    vec3 soundBarDown = SoundBarCreation(uv);
     
-    //vec2 d2 = fract((uv - p) * vec2(bands, segs));
-	//float led2 = smoothstep(1.0, 0.3, abs(d.x)) *
-	//	        smoothstep(1.0, 0.3, abs(d.y));
-	//vec3 ledColor2 = led2 * color * mask2;
-    
-    fragColor = vec4(ledColor, 1.0);
+    fragColor = vec4(soundBarUp + soundBarDown, 1.0);
+    //fragColor = vec4(soundBarDown, 1.0);
     
     
     // Attempt 2
