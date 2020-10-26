@@ -8,18 +8,56 @@
 //Declaring attribute
 layout (location = 0) in vec4 aPos; 
 
+//Transformation Uniforms
+uniform mat4 uModelMat;
+uniform mat4 uViewMat;
+uniform mat4 uProjMat;
+uniform mat4 uViewProjMat;
+
+
 //VARYING(vs)
 out vec4 vColor;
 
 void main()
 {
 	//REQUIRED: SET THIS VALUE!!!
-	gl_Position = aPos;
+	//problem: gl_Postition is in "clip-space"
+	//problem: aPos is in "obj-space"
+	//position relative to origin
+	//Transformation to take from model space to world space (relative to the world)
+	//Use model matrix to describe transformation world<-model (pos_w = wMat * aPos)
+	//In the world we need a camera(camera is a 3D obj meaning it has attributtes)
+	//Make scene relative to camera(called view-space or camera-space) -> origin is at camPos
+	//Use matrix to transform into view-space (pos_v = vMat * pos_w)
+	//if start with aPos -> obj-space to view-space (pos_v = vMat * wMat * aPos)
+	
+	//Position in model-space (wrong)
+	//gl_Position = aPos;
+	
+	//Position in world-space (still wrong)
+	vec4 pos_w = uModelMat * aPos;
+	//gl_Position = pos_w;
+	
+	//Position in view-space (still wrong)
+	//Normals stop in view-space
+	vec4 pos_v = uViewMat * pos_w;
+	//vec4 pos_v = uViewMat * uModelMat * aPos;
+	//gl_Position = pos_v;
+	
+	//Position in clip-space (correct!)
+	//result of projection
+	//any part of obj not within the camera's view is clipped
+	vec4 pos_c = uProjMat * pos_v;
+	//vec4 pos_c = uViewProjMat * pos_w; (world to clip)
+	//vec4 pos_c = uProjMat * uViewMat * uModelMat * aPos; -> (model view projection matrix)
+	gl_Position = pos_c ;
+	
 	
 	//OPTINAL: write varyings 
 	//vColor = vec4(1.0, 0.5, 0.0,1.0);
 	vColor = aPos;
 }
+
 
 **********************************************
 
