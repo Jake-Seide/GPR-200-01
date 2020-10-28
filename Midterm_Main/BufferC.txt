@@ -11,7 +11,6 @@
 vec2 ScreenCurve(in vec2 uv)
 {
     //Offsets a given UV to look as id the screen is curving
-    float vertCurve = 4.0, horizonCurve = 3.0; //Add these to common
     uv = uv * 2.0 - 1.0; //makes sure uv conforms to the screen
     vec2 offset = uv.yx / vec2(vertCurve, horizonCurve); // calculates curve offset
     uv = uv + uv * offset * offset; //curves screen
@@ -29,7 +28,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec2 crtUV = ScreenCurve(uv);
      
     //Creates Border Attenuation
-   	vec2 fc = 1.0 - smoothstep(vec2(0.9), vec2(1.0), abs(2.0 * crtUV - 1.0));
+    vec2 interpValue = 2.0 * crtUV - 1.0;
+   	vec2 fc = 1.0 - smoothstep(vec2(0.9), vec2(1.0), interpValue * interpValue);
     float fact = fc.x * fc.y;
     
     //Final Output

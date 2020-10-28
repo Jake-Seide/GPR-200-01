@@ -5,9 +5,31 @@
 
 //------------------------------------------------------------
 
-//Defines
+// Sound Bar Defines
+// Bands and Segs are the collums and rows of the audio visulizer
 #define bands 20.0
 #define segs 20.0
+
+
+// Diffusion Defines and Functions
+// Light Intesnisty
+#define LightIntensity 1.0
+
+// This is a "uniform" that was just manually made to help with the position of the light
+#define falloff vec3(0.1, 3.0, 10.0)
+
+// Length Function for Vec3
+float LengthVec3(vec3 a)
+{
+    return (a.x * a.x) +
+           (a.y * a.y) +
+           (a.z * a.z);
+}
+
+
+// Screen Curve Defines
+#define vertCurve 4.0
+#define horizonCurve 3.0
 
 
 //------------------------------------------------------------

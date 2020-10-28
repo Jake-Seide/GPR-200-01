@@ -1,3 +1,11 @@
+// Assigment by: Jake Seide and Joseph Tecce
+// Using Shadertoy Copywrite User Agreement
+
+//  -> Buffer B (scene)
+
+//------------------------------------------------------------
+// SHADERTOY MAIN
+
 // NOT ORIGINAL WORK!!! IDEAS FROM GIT-HUB BY: Matt Deslauriers
 // LINK: https://github.com/mattdesl/lwjgl-basics/wiki/ShaderLesson6#lambertian-illumination-model
 // ALSO GOT SOME OPTIMAZATION IDEAS FROM SHADERTOY USER: Hexus
@@ -6,11 +14,6 @@ vec4 LambertShading(in vec2 loc, in vec2 uv, in float flip)//, in float dummy)
 {
     vec2 mouse = iMouse.xy / iResolution.xy;
     vec3 lightPos;
-    
-    // Light Intensity
-    float intensity = 1.0;
-    // This is a "uniform" that was just manually made to help with the position of the light
-    vec3 falloff = vec3(0.1, 3.0, 10.0);
     
     // if NOT being pressed
     if(iMouse.w < 0.0)
@@ -21,7 +24,7 @@ vec4 LambertShading(in vec2 loc, in vec2 uv, in float flip)//, in float dummy)
     	lightPos.xy = lightPos.xy * flip + 0.5;
     }
     else { // WHEN being pressed
-    	lightPos = vec3(mouse.xy, 0.01);
+    	lightPos = vec3(mouse, 0.01);
     }
     
     // Gets the texture we are diffusing
@@ -31,13 +34,13 @@ vec4 LambertShading(in vec2 loc, in vec2 uv, in float flip)//, in float dummy)
     vec3 delta  = vec3(lightPos.xy - uv.xy, lightPos.z);
     
     // Fixed Light radius
-    delta.xy /= 120.0 / iResolution.xy;
+    delta.xy /= 100.0 / iResolution.xy;
     
     // calculating distance from texture to the light
-    float d = (delta.x * delta.x) + (delta.y * delta.y) + (delta.z * delta.z); //length(delta);
+    float d = LengthVec3(delta); //(delta.x * delta.x) + (delta.y * delta.y) + (delta.z * delta.z);
     
     // Calculates the distance between light, the intesity of light, and the falloff
-    float attenuation = intensity / (falloff.x + (falloff.y * d) + (falloff.z * d * d));
+    float attenuation = LightIntensity / (falloff.x + (falloff.y * d) + (falloff.z * d * d));
     
     // Combining Diffusion and and attenuation
     vec3 light = (diffuseTex.rgb + mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 1.0), uv.y)) * attenuation;
