@@ -13,3 +13,8 @@ void mainImage(out vec4 fragColor, in  vec2 fragCoord)
     //fragColor = texture(iChannel1, uv);
     //fragColor = ImageComposite(uv);
 }
+
+// Tips for optimazation tommorrow
+// Look through the small parts of our math
+// Such as with pow and abs (ask "Do we really need that?") or is there a simple answer right around the corner
+// Even if its close such as with the pow change on Buffer B
