@@ -2,18 +2,27 @@
 // LINK: https://github.com/mattdesl/lwjgl-basics/wiki/ShaderLesson6#lambertian-illumination-model
 // ALSO GOT SOME OPTIMAZATION IDEAS FROM SHADERTOY USER: Hexus
 // LINK: https://www.shadertoy.com/view/MsyXz3
-vec4 LambertShading(in vec2 loc, in vec2 uv)
+vec4 LambertShading(in vec2 loc, in vec2 uv, in float flip)//, in float dummy)
 {
+    vec2 mouse = iMouse.xy / iResolution.xy;
+    vec3 lightPos;
+    
     // Light Intensity
     float intensity = 1.0;
     // This is a "uniform" that was just manually made to help with the position of the light
     vec3 falloff = vec3(0.1, 3.0, 10.0);
     
-    // Calculate the lights position
-    // Also animates light to move from one side the other of the screen
-    //vec3 lightDir = vec3(sin(iTime * 0.5), sin(iTime * 0.5), 0.05);
-    vec3 lightPos = vec3(sin(iTime * 0.5), sin(iTime * 0.5), 0.05);
-    lightPos.xy = lightPos.xy * 0.3 + 0.5;
+    // if NOT being pressed
+    if(iMouse.w < 0.0)
+    {
+        // Calculate the lights position
+    	// Also animates light to move from one side the other of the screen
+    	lightPos = vec3(sin(iTime / 0.5), sin(iTime * 0.5), 0.05);
+    	lightPos.xy = lightPos.xy * flip + 0.5;
+    }
+    else { // WHEN being pressed
+    	lightPos = vec3(mouse.xy, 0.01);
+    }
     
     // Gets the texture we are diffusing
     vec4 diffuseTex = texture(iChannel0, loc);
@@ -22,24 +31,19 @@ vec4 LambertShading(in vec2 loc, in vec2 uv)
     vec3 delta  = vec3(lightPos.xy - uv.xy, lightPos.z);
     
     // Fixed Light radius
-    //delta.x /= 256.0 / iResolution.x;
-    //delta.y /= 256.0 / iResolution.y;
-    delta.xy /= 100.0 / iResolution.xy;
+    delta.xy /= 120.0 / iResolution.xy;
     
     // calculating distance from texture to the light
-    float d = length(delta);
+    float d = (delta.x * delta.x) + (delta.y * delta.y) + (delta.z * delta.z); //length(delta);
     
     // Calculates the distance between light, the intesity of light, and the falloff
-    //float IL = 1.0 / (1.0 + d / pointLight.lIntensity + (d * d) / 
-    //                  								(pointLight.lIntensity * pointLight.lIntensity));
-    // 
     float attenuation = intensity / (falloff.x + (falloff.y * d) + (falloff.z * d * d));
     
     // Combining Diffusion and and attenuation
-    vec3 light = diffuseTex.rgb * attenuation;
+    vec3 light = (diffuseTex.rgb + mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 1.0), uv.y)) * attenuation;
     
     // Correcting Gamma
-    light = pow(light, vec3(1.0 / 2.2));
+    light = sqrt(light);
 
     // Lambert Reflectance
     // Multiplying the actual texture RGB to the persedual light
@@ -57,9 +61,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec2 px = fragCoord;
     vec2 res = iChannelResolution[0].xy;
     float ratio = res.y * iResolution.y;
-    vec2 loc = px / res; // relative to texture (strech be gone!)
+    vec2 loc = px / res; // relative to texture
     
-    fragColor += LambertShading(loc, uv); //LambertShading(-loc, -uv);
-    //uv.x = uv.x * -1.0;
-    //fragColor += LambertShading(loc, uv);
+    fragColor += LambertShading(loc, uv, 0.3) + LambertShading(loc, uv, -0.3);
 }
