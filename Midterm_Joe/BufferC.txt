@@ -3,9 +3,12 @@
 //LINK2: https://www.shadertoy.com/view/lsKSWR
 vec2 ScreenCurve(in vec2 uv)
 {
+    // Good Example
+    // Avoid absolute if possible Will return possive
+    // We do it on line 11 anyway so is not needed 
     uv = uv * 2.0 - 1.0;
-    vec2 offset = abs(uv.yx)/vec2(6.0,4.0);
-    uv = uv+uv*offset*offset;
+    vec2 offset = uv.yx / vec2(6.0,4.0);
+    uv = uv + uv * offset * offset;
     uv = uv * 0.5 + 0.5;
     return uv;  
 }
@@ -19,7 +22,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     //CRT ScreenCurve
     vec2 crtUV = ScreenCurve( uv );
      
-    
+    // See if we can avoid this
+    // see if we dont need this, just draw without
+    // Math to do a zoom or something along this line
     if ( crtUV.x < 0.0 || crtUV.x > 1.0 || crtUV.y < 0.0 || crtUV.y > 1.0 )
     {
 		fragColor = vec4(0.0,0.0,0.0,1.0); //Black border

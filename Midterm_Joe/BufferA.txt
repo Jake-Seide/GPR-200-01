@@ -10,10 +10,10 @@ vec3 SoundBarCreation(in vec2 uv) //in float uvX, in float uvY)
     float fft = texture(iChannel0, vec2(pos.x, 0.0)).x;
     
     // clamp colors
-	vec3 color = mix(vec3(0.5, 0.7, 0.0), vec3(0.5, 0.0, 1.0), abs(uv.y));
+	vec3 color = texture(iChannel1, uv).xyz;//mix(vec3(0.5, 0.7, 0.0), vec3(0.5, 0.0, 1.0), abs(uv.y));
     
     // mask for bar graph
-    float mask = ((pos.y < fft) ? 1.0 : -2.0);// + 0.5;                       
+    float mask = ((pos.y < fft) ? 1.0 : -10.0);// + 0.5;                       
     
 	// led shape
 	vec2 d = fract((uv - pos) * vec2(bands, segs));
