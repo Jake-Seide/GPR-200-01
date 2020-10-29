@@ -7,6 +7,7 @@
 
 //Declaring attribute
 layout (location = 0) in vec4 aPos; 
+layout (location = 1) in vec3 aNormal;
 
 //Transformation Uniforms
 uniform mat4 uModelMat;
@@ -16,7 +17,11 @@ uniform mat4 uViewProjMat;
 
 
 //VARYING(vs)
-out vec4 vColor;
+//PER-VERTEX: final vColor
+//out vec4 vColor;
+
+//PER-FRAGMENT: individual components
+out vec4 vNormal;
 
 void main()
 {
@@ -35,32 +40,50 @@ void main()
 	//gl_Position = aPos;
 	
 	//Position in world-space (still wrong)
-	vec4 pos_w = uModelMat * aPos;
+	//vec4 pos_w = uModelMat * aPos;
 	//gl_Position = pos_w;
 	
 	//Position in view-space (still wrong)
 	//Normals stop in view-space
-	vec4 pos_v = uViewMat * pos_w;
+	//vec4 pos_v = uViewMat * pos_w;
 	//vec4 pos_v = uViewMat * uModelMat * aPos;
 	//gl_Position = pos_v;
 	
 	//Position in clip-space (correct!)
 	//result of projection
 	//any part of obj not within the camera's view is clipped
-	vec4 pos_c = uProjMat * pos_v;
+	//vec4 pos_c = uProjMat * pos_v;
 	//vec4 pos_c = uViewProjMat * pos_w; (world to clip)
 	//vec4 pos_c = uProjMat * uViewMat * uModelMat * aPos; -> (model view projection matrix)
-	gl_Position = pos_c ;
+	//gl_Position = pos_c ;
+	
+	//Final Pos Pipeline
+	mat4 modelViewMat = uViewMat * uModelMat;
+	vec4 pos_camera = modelViewMat * aPos;
+	vec4 pos_clip = uProjMat * pos_camera;
+	gl_Position = pos_clip;
+	
+	//Final Norm Pipeline
+	//Inverse transpose matrix for normalizing normals(fixes scaling issue)
+	mat3 normMatrix = inverse(transpose(mat3(modelViewMat)));
+	vec3 norm_cam = normMatrix * vec3(aNormal);
 	
 	
 	//OPTINAL: write varyings 
 	//vColor = vec4(1.0, 0.5, 0.0,1.0);
-	vColor = aPos;
+	//vColor = aPos;
+	
+	//DEBUGING:
+	//outputing normal as color
+	//PER-VERTEX output
+	//vColor = vec4(aNormal, 1.0);
+	
+	//PER-FRAGMENT output
+	//vNormal = aNormal;
+	vNormal = vec4(norm_cam, 0.0);
 }
 
-
 **********************************************
-
 #version 300 es
 
 //Only for GLSL ES
@@ -70,15 +93,25 @@ precision highp float;
 
 
 //declare output
-//layout (location = 0) out vec4 rtFragColor
-out vec4 rtFragColor;
+layout (location = 0) out vec4 rtFragColor;
+//out vec4 rtFragColor;
 
 //VARYING(ps)
-in vec4 vColor;
+//PER-VERTEX: recieve final color
+//in vec4 vColor;
+
+//PER-FRAGMENT
+in vec4 vNormal;
 
 //Both ps and vs need a main
 void main()
 {
 	//rtFragColor = vec4(0.0, 1.0, 1.0, 1.0);
-	rtFragColor = vColor;
+	//PER-VERTEX: recieve final color
+	//rtFragColor = vColor;
+	
+	//PER-FRAGMENT: inputs used to calculate final color
+	//normalize varyings
+	vec4 N = normalize(vNormal);
+	rtFragColor = vec4(N.xyz * 0.5 + 0.5, 1.0); //range of color = range of normal
 }
