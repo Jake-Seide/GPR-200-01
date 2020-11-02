@@ -6,8 +6,10 @@
 //e.g. surface normal
 
 //Declaring attribute
-layout (location = 0) in vec4 aPos; 
-layout (location = 1) in vec3 aNormal;
+layout (location = 0) in vec4 aPos; //obj space
+layout (location = 1) in vec3 aNormal; //obj space
+//layout (location = 2) in vec2 aTexCoord; //point in texture space -> look at atlas matrix for textureCoord pipeline
+layout (location = 2) in vec4 aTexCoord; //point in texture space
 
 //Transformation Uniforms
 uniform mat4 uModelMat;
@@ -22,6 +24,8 @@ uniform mat4 uViewProjMat;
 
 //PER-FRAGMENT: individual components
 out vec4 vNormal;
+//out vec2 vTextCoord;
+out vec4 vTextCoord;
 
 void main()
 {
@@ -81,6 +85,10 @@ void main()
 	//PER-FRAGMENT output
 	//vNormal = aNormal;
 	vNormal = vec4(norm_cam, 0.0);
+	vTexCoord = aTextCoord;
+
+	//flatten mesh
+	//gl_Position = uProjMat * modelViewMat * aTexCoord;
 }
 
 **********************************************
@@ -102,6 +110,7 @@ layout (location = 0) out vec4 rtFragColor;
 
 //PER-FRAGMENT
 in vec4 vNormal;
+in vec2 vTexCoord;
 
 //Both ps and vs need a main
 void main()
@@ -114,4 +123,8 @@ void main()
 	//normalize varyings
 	vec4 N = normalize(vNormal);
 	rtFragColor = vec4(N.xyz * 0.5 + 0.5, 1.0); //range of color = range of normal
+	
+	//set uniform and sample to get texture
+	//rtFragColor = vec4(vTexCoord, 0.0, 1.0); //vec2 version
+	rtFragColor = vTexCoord; //vec4 version
 }
