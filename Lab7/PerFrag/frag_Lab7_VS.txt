@@ -8,7 +8,7 @@
 //Declaring attribute
 layout (location = 0) in vec4 aPos; //obj space
 layout (location = 1) in vec3 aNormal; //obj space
-layout (location = 2) in vec2 aTexCoord; //texture space
+layout (location = 2) in vec4 aTexCoord; //texture space
 
 //Transformation Uniforms
 uniform mat4 uModelMat;
@@ -20,8 +20,9 @@ uniform mat4 uViewProjMat;
 //out vec4 vColor;
 
 //PER-FRAGMENT: individual components
-out vec4 vPos;
+out vec4 vPosition;
 out vec4 vNormal;
+out vec4 vTexcoord;
 
 
 void main()
@@ -35,6 +36,11 @@ void main()
 	mat3 normMatrix = inverse(transpose(mat3(modelViewMat)));
 	vec3 norm_cam = normMatrix * vec3(aNormal); //norm_cam seems to be 'normal'
 	
-	vPos = uModelMat * aPos;
-	vNormal = vec4(norm_cam, 1.0); 
+	//Camera Space
+	vPosition = uViewMat * uModelMat * aPos;
+	vNormal = vec4(norm_cam, 1.0);
+
+	//Obj Space
+	//vPosition = uModelMat * aPos;
+	//vNormal = vec4(norm_cam, 1.0); 
 }
