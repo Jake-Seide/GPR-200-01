@@ -76,6 +76,36 @@ vec4 PhongReflection_Cam(lights currentLight)
 	return vec4(lambertian * currentLight.diffuseColor + specular * currentLight.specColor);
 }
 
+vec4 PhongReflection_Object(lights currentLight)
+{
+	//Final Norm Pipeline
+	//Inverse transpose matrix for normalizing normals(fixes scaling issue)
+	mat4 modelViewMat = uViewMat * uModelMat;
+	mat3 normMatrix = inverse(transpose(mat3(modelViewMat)));
+	vec3 norm_cam = normMatrix * vec3(aNormal); //norm_cam seems to be 'normal' 
+												//aPos seems to be 'inputPosition'
+												//aNormal seems to be 'inputNormal' 
+
+	//this is the vert4 equivelent?
+	vec4 pos_camera = uModelMat * aPos;											
+	
+	//Lighting stuff in view obj maybe?? 
+    vec4 lightDir = normalize(currentLight.lightPos - aPos);
+    vec4 reflectDir = reflect(lightDir, normalize(aPos)); 
+    vec4 viewDir = normalize(aPos);
+    
+    float lambertian = max(dot(lightDir, viewDir), 0.0);
+	float specular = 0.0;
+	
+	if(lambertian > 0.0)
+	{
+		float specAngle = max(dot(reflectDir, viewDir), 0.0);
+		specular = pow(specAngle, 4.0);
+	}
+	
+	return vec4(lambertian * currentLight.diffuseColor + specular * currentLight.specColor);
+}
+
 void main()
 {	
 	//to get gl_pos into Clip Space
@@ -85,17 +115,19 @@ void main()
 	lights light2;
 	lights light3;
 
-	light1 = LightInit(light1, vec4(20.0, 1.0, 1.0, 1.0), vec4(0.0, 1.0, 1.0, 1.0), vec4(1.0, 1.0, 1.0, 1.0));
-	light2 = LightInit(light2, vec4(-20., 1.0, 1.0, 1.0), vec4(1.0, 0.0, 1.0, 0.5), vec4(1.0, 1.0, 1.0, 1.0));
-	light3 = LightInit(light3, vec4(0.0, 20.0, 1.0, 1.0), vec4(1.0, 1.0, 0.0, 0.5), vec4(1.0, 1.0, 1.0, 1.0));
+	light1 = LightInit(light1, vec4(2.0, 1.0, 1.0, 1.0), vec4(0.0, 1.0, 1.0, 1.0), vec4(1.0, 1.0, 1.0, 1.0));
+	light2 = LightInit(light2, vec4(-2.0, 1.0, 1.0, 1.0), vec4(1.0, 0.0, 1.0, 0.5), vec4(1.0, 1.0, 1.0, 1.0));
+	light3 = LightInit(light3, vec4(0.0, -5.0, 1.0, 1.0), vec4(1.0, 1.0, 0.0, 0.5), vec4(1.0, 1.0, 1.0, 1.0));
 
 	// Phong Relfection For View-Space
-	vColor = PhongReflection_Cam(light1) +
-			 PhongReflection_Cam(light2) +
-			 PhongReflection_Cam(light3);
+	//vColor = PhongReflection_Cam(light1) +
+	//		 PhongReflection_Cam(light2) +
+	//		 PhongReflection_Cam(light3);
 			 
 	// Phong Relfection For Object-Space
-			 
+	vColor = PhongReflection_Object(light1) +
+			 PhongReflection_Object(light2) +
+			 PhongReflection_Object(light3);
 			 
 	//Clip space stuff I think
 	//vec4 pos_camera = modelViewMat * aPos;
