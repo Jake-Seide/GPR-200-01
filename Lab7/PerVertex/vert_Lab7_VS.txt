@@ -23,11 +23,7 @@ out vec4 vColor;
 out vec4 vNormal;
 out vec2 vTexCoord;
 
-//Lighting info(Change to struct)
-const vec4 lightPos = vec4(1.0, 1.0, 1.0, 1.0);
-const vec4 diffuseColor = vec4(1.0, 1.0, 1.0, 1.0);
-const vec4 specColor = vec4(1.0, 1.0, 1.0, 1.0);
-
+// Light stuct
 struct lights
 {
 	vec4 lightPos;
@@ -35,7 +31,7 @@ struct lights
 	vec4 specColor;
 };
 
-
+// Inializing the lights with desired location ands colors
 lights LightInit(lights initLight, vec4 lightPos, 
 						vec4 diffuseColor, vec4 specColor)
 {
@@ -46,36 +42,48 @@ lights LightInit(lights initLight, vec4 lightPos,
 	return initLight;
 }
 
+// Reference Link: https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code/WebGLShaderLightMat/ShaderLightMat.html
 vec4 PhongReflection_Cam(lights currentLight)
 {
 	//Final Norm Pipeline
 	//Inverse transpose matrix for normalizing normals(fixes scaling issue)
 	mat4 modelViewMat = uViewMat * uModelMat;
 	mat3 normMatrix = inverse(transpose(mat3(modelViewMat)));
-	vec3 norm_cam = normMatrix * vec3(aNormal); //norm_cam seems to be 'normal' 
-												//aPos seems to be 'inputPosition'
-												//aNormal seems to be 'inputNormal' 
+	vec3 norm_cam = normMatrix * vec3(aNormal);
 
-	//this is the vert4 equivelent?
+	// Gets camera in view space
 	vec4 pos_camera = uModelMat * aPos;											
 	
-	//Lighting stuff in view space maybe?? 
+	// Getting Light direction, reflection direciottion off of sphere
+	// And getting normal view direciton off of the camera position
 	vec4 lightDir = normalize(currentLight.lightPos - pos_camera);
 	vec4 reflectDir = reflect(-lightDir, vec4(norm_cam, 1.0));
 	vec4 viewDir = normalize(-pos_camera);
-	
-	float lambertian = max(dot(lightDir, vec4(norm_cam, 1.0)), 0.0);
+						   
+	// Getting Lambert diffusion
+	float lambertian = max(((lightDir.x * vec4(norm_cam, 1.0).x) +
+							(lightDir.y * vec4(norm_cam, 1.0).y) +
+							(lightDir.z * vec4(norm_cam, 1.0).z) +
+							(lightDir.w * vec4(norm_cam, 1.0).w)), 0.0);
 	float specular = 0.0;
 	
 	if(lambertian > 0.0)
 	{
-		float specAngle = max(dot(reflectDir, viewDir), 0.0);
-		specular = pow(specAngle, 4.0);
+		// Getting the specular angles off of the sphere
+		float specAngle = max(((reflectDir.x * viewDir.x) +
+							   (reflectDir.y * viewDir.y) +
+							   (reflectDir.z * viewDir.z) +
+							   (reflectDir.w * viewDir.w)), 0.0);
+							   
+		// Multipling angle 4 times instead of power of 4
+		specular = specAngle * specAngle * specAngle * specAngle; //pow(specAngle, 4.0);
 	}
 	
+	// returning final Phong relfection
 	return vec4(lambertian * currentLight.diffuseColor + specular * currentLight.specColor);
 }
 
+// Reference Link: https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code/WebGLShaderLightMat/ShaderLightMat.html
 vec4 PhongReflection_Object(lights currentLight)
 {
 	//Final Norm Pipeline
@@ -86,23 +94,35 @@ vec4 PhongReflection_Object(lights currentLight)
 												//aPos seems to be 'inputPosition'
 												//aNormal seems to be 'inputNormal' 
 
-	//this is the vert4 equivelent?
+	// Gets camera in view space
 	vec4 pos_camera = uModelMat * aPos;											
 	
-	//Lighting stuff in view obj maybe?? 
+		// Getting Light direction, reflection direciottion off of sphere
+	// And getting normal view direciton off of the camera position 
     vec4 lightDir = normalize(currentLight.lightPos - aPos);
     vec4 reflectDir = reflect(lightDir, normalize(aPos)); 
     vec4 viewDir = normalize(aPos);
     
-    float lambertian = max(dot(lightDir, viewDir), 0.0);
+    // Getting Lambert diffusion
+	float lambertian = max(((lightDir.x * viewDir.x) +
+							   (lightDir.y * viewDir.y) +
+							   (lightDir.z * viewDir.z) +
+							   (lightDir.w * viewDir.w)), 0.0);
 	float specular = 0.0;
 	
 	if(lambertian > 0.0)
 	{
-		float specAngle = max(dot(reflectDir, viewDir), 0.0);
-		specular = pow(specAngle, 4.0);
+		// Getting the specular angles off of the sphere
+		float specAngle = max(((reflectDir.x * viewDir.x) +
+							   (reflectDir.y * viewDir.y) +
+							   (reflectDir.z * viewDir.z) +
+							   (reflectDir.w * viewDir.w)), 0.0);
+							   
+		// Multipling angle 4 times instead of power of 4
+		specular = specAngle * specAngle * specAngle * specAngle; //pow(specAngle, 4.0);
 	}
 	
+	// returning final Phong relfection
 	return vec4(lambertian * currentLight.diffuseColor + specular * currentLight.specColor);
 }
 
@@ -128,20 +148,4 @@ void main()
 	vColor = PhongReflection_Object(light1) +
 			 PhongReflection_Object(light2) +
 			 PhongReflection_Object(light3);
-			 
-	//Clip space stuff I think
-	//vec4 pos_camera = modelViewMat * aPos;
-	//vec4 pos_clip = uProjMat * pos_camera;
-	//gl_Position = pos_clip;
-	
-	
-	//OPTINAL: write varyings 
-	//vColor = vec4(1.0, 0.5, 0.0,1.0);
-	//vColor = aPos;
-	
-	//DEBUGING:
-	//outputing normal as color
-	//PER-VERTEX output
-	//vColor = vec4(aNormal, 1.0);
-
 }
