@@ -1,0 +1,40 @@
+#version 300 es
+
+//MAIN DUTY: READ ATTRIBUTES
+//e.g. 3D pos
+//e.g. uv: texture coord
+//e.g. surface normal
+
+//Declaring attribute
+layout (location = 0) in vec4 aPos; //obj space
+layout (location = 1) in vec3 aNormal; //obj space
+layout (location = 2) in vec2 aTexCoord; //texture space
+
+//Transformation Uniforms
+uniform mat4 uModelMat;
+uniform mat4 uViewMat;
+uniform mat4 uProjMat;
+uniform mat4 uViewProjMat;
+
+//VARYING(vs)
+//out vec4 vColor;
+
+//PER-FRAGMENT: individual components
+out vec4 vPos;
+out vec4 vNormal;
+
+
+void main()
+{	
+	//to get gl_pos into Clip Space
+	gl_Position = uViewProjMat * uModelMat * aPos;
+	
+	//Norm Pipeline
+	//Inverse transpose matrix for normalizing normals(fixes scaling issue)
+	mat4 modelViewMat = uViewMat * uModelMat;
+	mat3 normMatrix = inverse(transpose(mat3(modelViewMat)));
+	vec3 norm_cam = normMatrix * vec3(aNormal); //norm_cam seems to be 'normal'
+	
+	vPos = uModelMat * aPos;
+	vNormal = vec4(norm_cam, 1.0); 
+}

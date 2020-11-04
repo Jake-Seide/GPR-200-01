@@ -1,0 +1,47 @@
+#version 300 es
+
+//Only for GLSL ES
+#ifdef GL_ES
+precision highp float;
+#endif //GLES
+
+
+//declare output
+layout (location = 0) out vec4 rtFragColor;
+//out vec4 rtFragColor;
+
+//VARYING(ps)
+//PER-VERTEX: recieve final color
+//in vec4 vColor;
+
+//PER-FRAGMENT
+in vec4 vPosition;
+in vec4 vNormal;
+
+const vec4 lightPos = vec4(1.0,1.0,1.0, 1.0);
+const vec4 diffColor = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 specColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+//Both ps and vs need a main
+void main()
+{
+	
+	vec4 normal = normalize(vNormal);
+	vec4 lightDir = normalize(lightPos - vPosition);
+	
+	float lambertian = max(dot(lightDir, normal), 0.0);
+	float specular = 0.0;
+	
+	if(lambertian > 0.0)
+	{
+		vec4 reflectDir = reflect(lightDir, normal);
+		vec4 viewDir = normalize(-vPosition);
+		
+		float specAngle = max(dot(reflectDir, viewDir), 0.0);
+		specular = pow(specAngle, 16.0);
+	}
+	
+	
+	rtFragColor = vec4(lambertian * diffColor + specular * specColor);
+	
+}
