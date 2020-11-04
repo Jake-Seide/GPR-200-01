@@ -52,6 +52,7 @@ vec4 PhongReflection(lights currentLight)
 	{
 		// Refleciton of light on the "surface" of the sphere
 		vec4 reflectDir = reflect(lightDir, normal);
+
 		// Getting view direciton from the normalazed fragment position
 		vec4 viewDir = normalize(vPosition);
 		
