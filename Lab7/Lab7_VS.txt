@@ -1,0 +1,79 @@
+#version 300 es
+
+//MAIN DUTY: READ ATTRIBUTES
+//e.g. 3D pos
+//e.g. uv: texture coord
+//e.g. surface normal
+
+//Declaring attribute
+layout (location = 0) in vec4 aPos; //obj space
+layout (location = 1) in vec3 aNormal; //obj space
+layout (location = 2) in vec2 aTexCoord; //texture space
+
+//Transformation Uniforms
+uniform mat4 uModelMat;
+uniform mat4 uViewMat;
+uniform mat4 uProjMat;
+uniform mat4 uViewProjMat;
+
+//VARYING(vs)
+out vec4 vColor;
+
+//PER-FRAGMENT: individual components
+out vec4 vNormal;
+out vec2 vTexCoord;
+
+//Lighting info(Change to struct)
+const vec4 lightPos = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 diffuseColor = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 specColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+void main()
+{	
+	//to get gl_pos into Clip Space
+	gl_Position = uViewProjMat * uModelMat * aPos;
+
+	//Final Norm Pipeline
+	//Inverse transpose matrix for normalizing normals(fixes scaling issue)
+	mat4 modelViewMat = uViewMat * uModelMat;
+	mat3 normMatrix = inverse(transpose(mat3(modelViewMat)));
+	vec3 norm_cam = normMatrix * vec3(aNormal); //norm_cam seems to be 'normal' 
+												//aPos seems to be 'inputPosition'
+												//aNormal seems to be 'inputNormal' 
+												
+	//this is the vert4 equivelent?
+	vec4 pos_camera = uModelMat * aPos;											
+	
+	//Lighting stuff in view space maybe?? 
+	vec4 lightDir = normalize(lightPos - pos_camera);
+	vec4 reflectDir = reflect(-lightDir, vec4(norm_cam, 1.0));
+	vec4 viewDir = normalize(-pos_camera);
+	
+	float lambertian = max(dot(lightDir, vec4(norm_cam, 1.0)), 0.0);
+	float specular = 0.0;
+	
+	if(lambertian > 0.0)
+	{
+		float specAngle = max(dot(reflectDir, viewDir), 0.0);
+		specular = pow(specAngle, 4.0);
+	}
+	
+	vColor = vec4(lambertian * diffuseColor + specular * specColor);
+	
+
+	//Clip space stuff I think
+	//vec4 pos_camera = modelViewMat * aPos;
+	//vec4 pos_clip = uProjMat * pos_camera;
+	//gl_Position = pos_clip;
+	
+	
+	//OPTINAL: write varyings 
+	//vColor = vec4(1.0, 0.5, 0.0,1.0);
+	//vColor = aPos;
+	
+	//DEBUGING:
+	//outputing normal as color
+	//PER-VERTEX output
+	//vColor = vec4(aNormal, 1.0);
+
+}
