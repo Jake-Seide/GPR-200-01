@@ -128,3 +128,19 @@ void main()
 	rtFragColor = vec4(vTexCoord, 0.0, 1.0); //vec2 version
 	//rtFragColor = vTexCoord; //vec4 version
 }
+
+
+
+********************************************************
+//Hello Textures
+-> this is the process for implementing textures on a model 
+
+1. readin pos and texcoord attributes
+2. pass out texcoord (varying)
+3. add texture in obj menu
+4. Bind texture to correct program (number is like channel)
+5. texture is sampler2d with an int loc
+6. declare sampler2d uniform 
+7. add int (uTexture) in variables manager tab
+8. rtFragColor = texture(uTex, vTexcoord); -> uTex is the int in the variable manager
+ 
