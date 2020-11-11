@@ -141,6 +141,6 @@ void main()
 4. Bind texture to correct program (number is like channel)
 5. texture is sampler2d with an int loc
 6. declare sampler2d uniform 
-7. add int (uTexture) in variables manager tab
+7. add int (uTex) in variables manager tab
 8. rtFragColor = texture(uTex, vTexcoord); -> uTex is the int in the variable manager
  
