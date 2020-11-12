@@ -143,4 +143,14 @@ void main()
 6. declare sampler2d uniform 
 7. add int (uTex) in variables manager tab
 8. rtFragColor = texture(uTex, vTexcoord); -> uTex is the int in the variable manager
+
+************************************************************
+//Hello Multipass
+-> this is the process for implementing multipass in shadered
+
+1. create render texture(to use as sampler)
+2. unbind image from pDisplay
+3. bind rtScene to pDisplay
+4. 
+
  
