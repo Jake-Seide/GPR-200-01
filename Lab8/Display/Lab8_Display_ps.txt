@@ -8,15 +8,21 @@ layout (location = 0) out vec4 rtFragColor;
 
 in vec2 vTexcoord;
 
-uniform sampler2D otherTex;
+uniform sampler2D uTex_0;
+uniform sampler2D uTex_1;
 
+vec4 ImageComposite()
+{
+    vec4 val = texture(uTex_1, vTexcoord);
+    vec4 sum = texture(uTex0, vTexcoord);;
+
+    return sum + val;//mix(val, sum, 0.4);
+
+}
 
 void main()
 {
-	vec2 uv = vTexcoord;
-	vec4 col = texture(otherTex, uv);
-	rtFragColor = col;
-	
-	//rtFragColor = vec4(1.5, 0.5, 0.5, 1.0);
-	//rtFragColor = texture(uTex, vTexcoord);
+    //vec2 uv = vTexcoord;
+    //vec4 col = texture(uTex, uv);
+    rtFragColor = ImageComposite();
 }
