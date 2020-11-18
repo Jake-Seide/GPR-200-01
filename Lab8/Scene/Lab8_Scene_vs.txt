@@ -1,15 +1,20 @@
 #version 300 es
 
 layout (location = 0) in vec4 aPosition;
+layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexcoord;
 
 uniform mat4 uModelMat, uViewMat, uProjMat;
 
 out vec2 vTexcoord;
+out vec4 vNormal;
 
 void main()
 {
 	mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
 	gl_Position = modelViewProjMat * aPosition;
 	vTexcoord = aTexcoord;
+	
+	//gl_Position = uProjMat * uViewMat * uModelMat * aPosition;
+	//vNormal = vec4 (aNormal, 0.0);
 }
