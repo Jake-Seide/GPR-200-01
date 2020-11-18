@@ -1,0 +1,27 @@
+#version 300 es
+
+//MAIN DUTY: READ ATTRIBUTES
+//e.g. 3D pos
+//e.g. surface normal
+//e.g. uv: texture coord
+
+//Attributes
+layout (location = 0) in vec4 aPosition;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexcoord;
+
+//Uniforms
+uniform mat4 uModelMat, uViewMat, uProjMat, uViewProjMat;
+
+//Varying(vs)
+out vec4 vPosition;
+out vec2 vTexcoord;
+
+void main()
+{
+	mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
+	gl_Position = modelViewProjMat * aPosition;
+	
+	vPosition = uViewMat * uModelMat * aPosition;
+	vTexcoord = aTexcoord;
+}
