@@ -1,20 +1,37 @@
 #version 300 es
 
+//MAIN DUTY: READ ATTRIBUTES
+//e.g. 3D pos
+//e.g. surface normal
+//e.g. uv: texture coord
+
+//Attributes
 layout (location = 0) in vec4 aPosition;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexcoord;
 
-uniform mat4 uModelMat, uViewMat, uProjMat;
+//Uniforms
+uniform mat4 uModelMat, uViewMat, uProjMat, uViewProjMat;
 
-out vec2 vTexcoord;
+//Varying(vs)
+out vec4 vPosition;
 out vec4 vNormal;
+out vec2 vTexcoord;
+
 
 void main()
 {
 	mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
 	gl_Position = modelViewProjMat * aPosition;
-	vTexcoord = aTexcoord;
 	
-	//gl_Position = uProjMat * uViewMat * uModelMat * aPosition;
-	//vNormal = vec4 (aNormal, 0.0);
+	//Norm Pipeline
+	//Inverse transpose matrix for normalizing normals(fixes scaling issue)
+	mat4 modelViewMat = uViewMat * uModelMat;
+	mat3 normMatrix = inverse(transpose(mat3(modelViewMat)));
+	vec3 norm_cam = normMatrix * vec3(aNormal); //norm_cam seems to be 'normal'
+	
+	//Passing Varyings
+	vPosition = uViewMat * uModelMat * aPosition;
+	vNormal = vec4(norm_cam, 1.0);
+	vTexcoord = aTexcoord;
 }
