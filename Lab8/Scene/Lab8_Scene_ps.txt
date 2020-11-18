@@ -83,8 +83,8 @@ void main()
 	light1 = LightInit(light1, vec4(1.0, -2.0, 1.0, -1.0), vec4(0.0, 1.0, 1.0, 1.0), vec4(1.0, 1.0, 1.0, 1.0));
 	
 	// Color Output
-	//rtFragColor = vec4(0.5, 0.5, 0.5, 1.0);
-	//rtFragColor = texture(uTex, vTexcoord);
+	//rtFragColor = vec4(1.0, 0.5, 0.5, 1.0);
+	rtFragColor = texture(uTex, vTexcoord);
 	//rtFragColor = vec4(0.5, 0.5, 0.5, 1.0) + PhongReflection(light1);
-	rtFragColor = texture(uTex, vTexcoord) + PhongReflection(light1);
+	//rtFragColor = texture(uTex, vTexcoord) + PhongReflection(light1);
 }

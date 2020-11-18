@@ -4,12 +4,17 @@
 precision highp float;
 #endif // GL_ES
 
+// Attribute
 layout (location = 0) out vec4 rtFragColor;
 
+// Varyings (ps)
 in vec2 vTexcoord;
 
+// Texture Uniforms
 uniform sampler2D uTex;
 
+// Getting Luminacity color for each pixel
+// Referening CookBook By: David Wolff
 float Luma (in vec3 color)
 {
     return 0.2126 * color.r + 
@@ -17,16 +22,20 @@ float Luma (in vec3 color)
            0.0722 * color.b;
 }
 
-vec4 TonePass(in vec2 fragCoord)
-{
-	vec2 uv = vTexcoord.xy;
+// Brightening and darkening pixels based on luminocity
+// Referening CookBook By: David Wolff
+vec4 TonePass()
+{	
+	// Geting the Scene Pass
 	vec4 val = texture(uTex, vTexcoord.xy);
 	
+	// Getting Constrants for Tone Effect
 	return val * clamp(Luma(val.rgb) - 0.5, 0.0, 1.0) *
 			(1.0 / (1.0 - 0.5));
 }
 
 void main()
 {
-	rtFragColor = TonePass(vTexcoord); //texture(uTex, vTexcoord.xy);
+	// Calling Tone Pass
+	rtFragColor = TonePass();
 }

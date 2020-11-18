@@ -6,23 +6,24 @@ precision highp float;
 
 layout (location = 0) out vec4 rtFragColor;
 
+//Varying(ps)
 in vec2 vTexcoord;
 
+// Texture Uniforms
 uniform sampler2D uTex_0;
 uniform sampler2D uTex_1;
 
+// Combining Scene Pass and Blurr Pass to create final display
 vec4 ImageComposite()
 {
-    vec4 val = texture(uTex_1, vTexcoord);
-    vec4 sum = texture(uTex0, vTexcoord);;
-
-    return sum + val;//mix(val, sum, 0.4);
-
+	vec4 val = texture(uTex_1, vTexcoord); // Scene Pass
+	vec4 sum = texture(uTex_0, vTexcoord); // Blurr Pass
+	
+	return sum + val;
 }
 
 void main()
 {
-    //vec2 uv = vTexcoord;
-    //vec4 col = texture(uTex, uv);
-    rtFragColor = ImageComposite();
+	// Calling Final Display
+	rtFragColor = ImageComposite();
 }

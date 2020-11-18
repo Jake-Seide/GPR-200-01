@@ -1,17 +1,18 @@
 #version 300 es
 
+// Attributes
 layout (location = 0) in vec4 aPosition;
 layout (location = 2) in vec2 aTexcoord;
 
+//Varying(vs)
 out vec2 vTexcoord;
-
 
 void main()
 {
+	// Set postion attribute
 	gl_Position = aPosition;
 
-	//mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
-	//gl_Position = modelViewProjMat * aPosition;
+	// Set texture varying
 	vTexcoord = aTexcoord;
 	vTexcoord = aPosition.xy * 0.5 + 0.5;
 }
