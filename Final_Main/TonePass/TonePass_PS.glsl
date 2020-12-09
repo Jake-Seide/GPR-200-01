@@ -1,8 +1,4 @@
-a#version 300 es
-
-#ifdef GL_ES
-precision highp float;
-#endif // GL_ES
+#version 330
 
 layout (location = 0) out vec4 rtFragColor;
 
