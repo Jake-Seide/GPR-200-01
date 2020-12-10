@@ -1,5 +1,4 @@
-#version 330
-
+#version 300 es
 
 //Attributes
 layout (location = 0) in vec4 aPosition;
@@ -12,7 +11,10 @@ uniform float uTime;
 
 // Varyings
 out float noise;
+out float vTime;
 out vec2 vTexcoord;
+out vec4 vNormal;
+out vec4 vPosition;
 
 // Link: https://github.com/ashima/webgl-noise/blob/master/src/classicnoise3D.glsl
 vec3 mod289(vec3 x)
@@ -120,7 +122,7 @@ float rand(vec3 psudo)
 
 float turbulence(vec3 p)
 {
-	float w = 50.0;
+	float w = 100.0;
 	float t = 0.0;
 	
 	for(float f = 1.0; f <= 10.0; ++f)
@@ -139,18 +141,29 @@ float turbulence(vec3 p)
 void main()
 {
 
-	//gl_Position = aPosition;
-	//mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
-	//gl_Position = modelViewProjMat * aPosition;
-	vTexcoord = aTexcoord;
-	vTexcoord = aPosition.xy * 0.5 + 0.5;
-	
-	noise = 10.0 * -.10 * turbulence(0.5 * aNormal + (uTime/3));
+	noise = 10.0 * -.10 * turbulence(0.5 * aNormal + (uTime / 3.0));
 	float b = 5.0 * pnoise(0.05 * aPosition.xyz + vec3(uTime), vec3(100.0));
 	float displacement = - 10.0 * noise + b;
-
-	//Outputs new position
+	
+	//gl_Position = aPosition;
+	mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
+	gl_Position = modelViewProjMat * aPosition;
+	//Norm Pipeline
+	//Inverse transpose matrix for normalizing normals(fixes scaling issue)
+	mat4 modelViewMat = uViewMat * uModelMat;
+	mat3 normMatrix = inverse(transpose(mat3(modelViewMat)));
+	vec3 norm_cam = normMatrix * vec3(aNormal); //norm_cam seems to be 'normal'
+	
+	//Passing Varyings
+	vPosition = uViewMat * uModelMat * aPosition;
+	vNormal = vec4(norm_cam, 1.0);
+	
+	vTexcoord = aTexcoord;
+	vTexcoord = aPosition.xy * 0.5 + 0.5;
+	vTime = uTime;
+			
 	vec3 newPosition = aPosition.xyz + aNormal * displacement;
 	gl_Position = uProjMat * uViewMat * uModelMat * vec4(newPosition, 1.0);
-
+	
+	
 }
