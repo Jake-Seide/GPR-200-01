@@ -1,4 +1,4 @@
-#version 300 es
+#version 330
 
 //Attributes
 layout (location = 0) in vec4 aPosition;
@@ -8,6 +8,7 @@ layout (location = 2) in vec2 aTexcoord;
 //Uniforms
 uniform mat4 uModelMat, uViewMat, uProjMat, uViewProjMat;
 uniform float uTime;
+uniform vec4 uMouse;
 
 // Varyings
 out float noise;
@@ -45,7 +46,7 @@ vec3 fade(vec3 t) {
   return t*t*t*(t*(t*6.0-15.0)+10.0);
 }
 
-// Classic Perlin noise, periodic variant
+// Classic Perlin noise, periodic variant, Link: Link: https://github.com/ashima/webgl-noise/blob/master/src/classicnoise3D.glsl
 float pnoise(vec3 P, vec3 rep)
 {
   vec3 Pi0 = mod(floor(P), rep); // Integer part, modulo period
@@ -115,11 +116,7 @@ float pnoise(vec3 P, vec3 rep)
   return 2.2 * n_xyz;
 }
 
-float rand(vec3 psudo)
-{
-	return fract(sin(dot(psudo.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
+//Gets the noise and applying it to a format that can effect the sphere
 float turbulence(vec3 p)
 {
 	float w = 100.0;
@@ -128,26 +125,23 @@ float turbulence(vec3 p)
 	for(float f = 1.0; f <= 10.0; ++f)
 	{
 		float power = pow(2.0, f);
-		//vec3 temp = abs(power * p);
-		//vec2 v  = vec2 (1.1, 2.0);
-		//float noisetemp = (noise1(1.0f) + 1) / 2.0f;
-		t += abs( pnoise(vec3(power * p), vec3(10.0, 10.0, 10.0)) / power);//, vec3(10.0, 10.0, 10.0)) / power);
-		
+		t += abs( pnoise(vec3(power * p), vec3(10.0, 10.0, 10.0)) / power);
 	}
-	
 	return t;
 }
 
+//Main Function
 void main()
 {
-
+	//Applying noise from turbulence func and setting the displacement
 	noise = 10.0 * -.10 * turbulence(0.5 * aNormal + (uTime / 3.0));
 	float b = 5.0 * pnoise(0.05 * aPosition.xyz + vec3(uTime), vec3(100.0));
 	float displacement = - 10.0 * noise + b;
 	
-	//gl_Position = aPosition;
+	//gl_Position to Camera Space
 	mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
 	gl_Position = modelViewProjMat * aPosition;
+	
 	//Norm Pipeline
 	//Inverse transpose matrix for normalizing normals(fixes scaling issue)
 	mat4 modelViewMat = uViewMat * uModelMat;
@@ -157,13 +151,20 @@ void main()
 	//Passing Varyings
 	vPosition = uViewMat * uModelMat * aPosition;
 	vNormal = vec4(norm_cam, 1.0);
-	
 	vTexcoord = aTexcoord;
 	vTexcoord = aPosition.xy * 0.5 + 0.5;
 	vTime = uTime;
-			
-	vec3 newPosition = aPosition.xyz + aNormal * displacement;
-	gl_Position = uProjMat * uViewMat * uModelMat * vec4(newPosition, 1.0);
 	
-	
+	//Mouse Input Handler
+	if(uMouse.w <= 0.0) //if left mouse is not being clicked
+	{
+		//Output Displaced vertex position 
+		vec3 newPosition = aPosition.xyz + aNormal * displacement;
+		gl_Position = uProjMat * uViewMat * uModelMat * vec4(newPosition, 1.0);
+	}
+	else //Left Mouse Click
+	{
+		//Set default position(sphere)
+		gl_Position = uProjMat * uViewMat * uModelMat * aPosition;
+	}
 }

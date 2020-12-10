@@ -16,12 +16,25 @@ vec4 BlurrPass()
     float offset[5] = float[](0.0, 1.0, 2.0, 3.0, 4.0);
     float weight[5] = float[](0.29, 0.25, 0.2, 0.15, 0.1);
 
-        rtFragColor = texture(uTex, vTexcoord) * weight[0];
-    for (int i=1; i<5; i++) {
-        rtFragColor += texture(uTex, vTexcoord + vec2(0.0, offset[i])) * weight[i];
+	//Getiing Tone Pass
+    rtFragColor = texture(uTex, vTexcoord) * weight[0];
+    
+	// Optimazation for for-loop
+    // Blurring by the offset on the x and y axis
+    rtFragColor += texture(uTex, vTexcoord + vec2(0.0, offset[0])) * weight[0];
+    rtFragColor += texture(uTex,  vTexcoord - vec2(0.0, offset[0])) * weight[0];
 
-        rtFragColor += texture(uTex,  vTexcoord - vec2(0.0, offset[i])) * weight[i];
-    }
+    rtFragColor += texture(uTex, vTexcoord + vec2(0.0, offset[1])) * weight[1];
+    rtFragColor += texture(uTex,  vTexcoord - vec2(0.0, offset[1])) * weight[1];
+
+    rtFragColor += texture(uTex, vTexcoord + vec2(0.0, offset[2])) * weight[2];
+    rtFragColor += texture(uTex,  vTexcoord - vec2(0.0, offset[2])) * weight[2];
+
+    rtFragColor += texture(uTex, vTexcoord + vec2(0.0, offset[3])) * weight[3];
+    rtFragColor += texture(uTex,  vTexcoord - vec2(0.0, offset[3])) * weight[3];
+
+    rtFragColor += texture(uTex, vTexcoord + vec2(0.0, offset[4])) * weight[4];
+    rtFragColor += texture(uTex,  vTexcoord - vec2(0.0, offset[4])) * weight[4];
 
     return rtFragColor;
 }
@@ -29,6 +42,6 @@ vec4 BlurrPass()
 // mainImage: process the current pixel (exactly one call per fragment)
 void main()
 {
-    // Blurr Pass
+    //Outputs Blur Effect
     rtFragColor = BlurrPass();
 }

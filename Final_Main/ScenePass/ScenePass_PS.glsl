@@ -1,21 +1,17 @@
-#version 300 es
+#version 330
 
-//Only for GLSL ES
-#ifdef GL_ES
-precision highp float;
-#endif //GLES
-
+//Output variable
 layout(location = 0) out vec4 rtFragColor;
 
-uniform sampler2D uTex;
-//uniform float uTime;
-
+//Varying
 in float vTime;
 in float noise;
 in vec2 vTexcoord;
 in vec4 vNormal;
 in vec4 vPosition;
 
+//Uniforms
+uniform sampler2D uTex;
 
 //Light struct
 struct lights
@@ -77,22 +73,13 @@ vec4 PhongReflection(lights currentLight)
 	return vec4(lambertian * currentLight.diffuseColor + specular * currentLight. specColor);
 }
 
-float random( vec3 scale, float seed ){
-  return fract( sin( dot( gl_FragCoord.xyz + seed, scale ) ) * 43758.5453 + seed ) ;
-}
-
 void main()
 {
+	//Init lights
 	lights light;
-	
 	light = LightInit(light, vec4(1.0, 1.0, 1.0, -1.0), vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 1.0, 1.0, 1.0));
 	
-	//float r = 0.01 * random(vec3(12.9898, 78.233, 151.7182), 0.0);
-
-	//vec2 tPos = vec2(0.0, 1.3 * noise + r);
-	//vec4 color = texture(uTex, tPos);
-	
-	//vec3 color = vec3(vTexcoord * (1.0 - 2.0 * noise), 0.0);
+	//Output to ScenePassRT (sphere + phong shading)
 	rtFragColor = texture(uTex, vTexcoord) + PhongReflection(light); //vec4(color.rgb, 1.0) + PhongReflection(light);
 	
 }

@@ -15,8 +15,10 @@ out vec2 vTexcoord;
 
 void main()
 {
+	//Setting Position Attributes
 	gl_Position = aPosition;
-
+	
+	//Set Texture Varyings
 	vTexcoord = aTexcoord;
 	vTexcoord = aPosition.xy * 0.5 + 0.5;
 }
