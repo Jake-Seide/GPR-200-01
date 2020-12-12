@@ -37,9 +37,6 @@ vec4 PhongReflection(lights currentLight)
 	// Normalizes the normal attribute
 	vec4 normal = normalize(vNormal);
 	
-	currentLight.lightPos = vec4(vec3(cos((vTime / 2.0) * 10.0), sin((vTime / 2.0) * 10.0), 0.05), 0.5);
-    currentLight.lightPos.xy = currentLight.lightPos.xy * currentLight.lightPos.xy * 0.3 + 0.5; //vec2(sin(vTime * 0.5), sin (vTime * 0.5));
-	
 	// Gets light direciton by normalizing light position and fragment postion
 	vec4 lightDir = normalize(currentLight.lightPos - vPosition);
 	
@@ -80,6 +77,6 @@ void main()
 	light = LightInit(light, vec4(1.0, 1.0, 1.0, -1.0), vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 1.0, 1.0, 1.0));
 	
 	//Output to ScenePassRT (sphere + phong shading)
-	rtFragColor = texture(uTex, vTexcoord) + PhongReflection(light); //vec4(color.rgb, 1.0) + PhongReflection(light);
+	rtFragColor = texture(uTex, vTexcoord) + PhongReflection(light); 
 	
 }

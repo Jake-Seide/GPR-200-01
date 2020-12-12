@@ -47,7 +47,7 @@ vec3 fade(vec3 t) {
   return t*t*t*(t*(t*6.0-15.0)+10.0);
 }
 
-// Classic Perlin noise, periodic variant, Link: Link: https://github.com/ashima/webgl-noise/blob/master/src/classicnoise3D.glsl
+// Classic Perlin noise, periodic variant, Link: https://github.com/ashima/webgl-noise/blob/master/src/classicnoise3D.glsl
 float pnoise(vec3 P, vec3 rep)
 {
   vec3 Pi0 = mod(floor(P), rep); // Integer part, modulo period
@@ -117,16 +117,17 @@ float pnoise(vec3 P, vec3 rep)
   return 2.2 * n_xyz;
 }
 
-//Gets the noise and applying it to a format that can effect the sphere
+//Gets the noise and applying it to a format that can effect the sphere (Link: https://www.clicktorelease.com/blog/vertex-displacement-noise-3d-webgl-glsl-three-js/)
 float turbulence(vec3 p)
 {
 	float w = 100.0;
 	float t = 0.5;
 	
+	//Was going to write out code 10 times but changed to for loop to avoid large redundancy 
 	for(float f = 1.0; f <= 10.0; ++f)
 	{
-		float power = pow(2.0, f);
-		t += abs( pnoise(vec3(power * p), vec3(10.0, 10.0, 10.0)) / power);
+		float fpower =  f * f;
+		t += abs( pnoise(vec3(fpower * p), vec3(10.0, 10.0, 10.0)) / fpower);
 	}
 	return t;
 }
@@ -135,10 +136,9 @@ float turbulence(vec3 p)
 void main()
 {
 	//Applying noise from turbulence func and setting the displacement
-	noise = 10.0 * -.10 * turbulence(0.5 * aNormal + (uTime / 3.0));
+	noise = 10.0 * -.10 * turbulence(0.5 * aNormal + (uTime * .33));
 	float b = 5.0 * pnoise(0.05 * aPosition.xyz + vec3(uTime), vec3(100.0));
-	float displacement = - 10.0 * noise + b;
-	float displacement2 = -5.0 * noise + b;
+	float displacement = -10.0 * noise + b;
 	
 	//gl_Position to Camera Space
 	mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
@@ -157,19 +157,18 @@ void main()
 	vTexcoord = aPosition.xy * 0.5 + 0.5;
 	vTime = uTime;
 	
-	//Default and Displacement Positions
-	vec4 defaultPos = uProjMat * uViewMat * uModelMat * aPosition;
-	vec3 newPos = aPosition.xyz + aNormal + vec3(uMousePos.xy * displacement/3.0, 1.0);
-	
 	//Mouse Input Handler
-	if(uMouse.w >= 0.0) //if left mouse is being clicked
-	{
-		//Seting displaced position towards the mousePos
-		gl_Position = uProjMat * uViewMat * uModelMat * vec4(newPos, 1.0);
-	}
-	else //Not being clicked
+	if(uMouse.w <= 0.0) //if left mouse is not being clicked
 	{
 		//Set default position(sphere)
-		gl_Position = defaultPos;
+		gl_Position = uProjMat * uViewMat * uModelMat * aPosition;
+	}
+	else //Left mouse clicked
+	{
+		//Default and Displacement Positions
+		vec3 newPos = aPosition.xyz + aNormal + vec3(uMousePos.xy * (displacement * .33), 1.0);
+	
+		//Seting displaced position towards the mousePos
+		gl_Position = uProjMat * uViewMat * uModelMat * vec4(newPos, 1.0);
 	}
 }
