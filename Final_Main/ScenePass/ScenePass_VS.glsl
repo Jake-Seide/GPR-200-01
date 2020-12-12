@@ -9,6 +9,7 @@ layout (location = 2) in vec2 aTexcoord;
 uniform mat4 uModelMat, uViewMat, uProjMat, uViewProjMat;
 uniform float uTime;
 uniform vec4 uMouse;
+uniform vec4 uMousePos;
 
 // Varyings
 out float noise;
@@ -120,7 +121,7 @@ float pnoise(vec3 P, vec3 rep)
 float turbulence(vec3 p)
 {
 	float w = 100.0;
-	float t = 0.0;
+	float t = 0.5;
 	
 	for(float f = 1.0; f <= 10.0; ++f)
 	{
@@ -137,6 +138,7 @@ void main()
 	noise = 10.0 * -.10 * turbulence(0.5 * aNormal + (uTime / 3.0));
 	float b = 5.0 * pnoise(0.05 * aPosition.xyz + vec3(uTime), vec3(100.0));
 	float displacement = - 10.0 * noise + b;
+	float displacement2 = -5.0 * noise + b;
 	
 	//gl_Position to Camera Space
 	mat4 modelViewProjMat = uProjMat * uViewMat * uModelMat;
@@ -155,16 +157,19 @@ void main()
 	vTexcoord = aPosition.xy * 0.5 + 0.5;
 	vTime = uTime;
 	
+	//Default and Displacement Positions
+	vec4 defaultPos = uProjMat * uViewMat * uModelMat * aPosition;
+	vec3 newPos = aPosition.xyz + aNormal + vec3(uMousePos.xy * displacement/3.0, 1.0);
+	
 	//Mouse Input Handler
-	if(uMouse.w <= 0.0) //if left mouse is not being clicked
+	if(uMouse.w >= 0.0) //if left mouse is being clicked
 	{
-		//Output Displaced vertex position 
-		vec3 newPosition = aPosition.xyz + aNormal * displacement;
-		gl_Position = uProjMat * uViewMat * uModelMat * vec4(newPosition, 1.0);
+		//Seting displaced position towards the mousePos
+		gl_Position = uProjMat * uViewMat * uModelMat * vec4(newPos, 1.0);
 	}
-	else //Left Mouse Click
+	else //Not being clicked
 	{
 		//Set default position(sphere)
-		gl_Position = uProjMat * uViewMat * uModelMat * aPosition;
+		gl_Position = defaultPos;
 	}
 }
